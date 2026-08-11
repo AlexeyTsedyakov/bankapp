@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bankapp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+<header class="section is-flex is-justify-content-space-between is-align-items-baseline">
+    <div>
+        <span class="title">Bankapp</span>
+    </div>
+    <div>
+        <span sec:authentication="name">Username</span>
+        <a class="has-text-danger" href="#">Выйти</a>
+    </div>
+</header>
+
+<main class="has-background">
+    <div class="container">
+        <section class="section pb-0">
+            <div class="tabs is-boxed">
+                <ul>
+                    <li class="is-active"><a data-tab="overview">Обзор</a></li>
+                    <li><a data-tab="transfers">Переводы</a></li>
+                    <li><a data-tab="rates">Курсы валют</a></li>
+                    <li><a data-tab="settings">Настройки</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="section grid" data-tab-content="overview">
+            <div class="cell is-col-span-2">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">Мои счета</p>
+                    </header>
+                    <div class="card-content is-flex is-flex-direction-column is-align-items-center">
+                        <table class="table is-striped is-fullwidth">
+                            <thead>
+                            <tr>
+                                <th>Валюта</th>
+                                <th>Баланс</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr>
+                                <td>RUB</td>
+                                <td>127 000,02</td>
+                                <td>
+                                    <button class="button is-small is-success is-outlined" type="button"
+                                            title="Редактировать">
+                                            <span class="icon">
+                                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                            </span>
+                                    </button>
+                                    <button class="button is-small is-danger is-outlined" type="button" title="Удалить">
+                                                <span class="icon">
+                                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                                </span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>USD</td>
+                                <td>2 100, 93</td>
+                                <td>
+                                    <button class="button is-small is-success is-outlined" type="button"
+                                            title="Редактировать">
+                                            <span class="icon">
+                                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                            </span>
+                                    </button>
+                                    <button class="button is-small is-danger is-outlined" type="button" title="Удалить">
+                                                <span class="icon">
+                                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                                </span>
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <button class="button">+ Добавить счет в новой валюте</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cell is-col-span-2">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">Внесение / снятие</p>
+                    </header>
+                    <form class="card-content">
+                        <div class="field">
+                            <label class="label">Счет</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select>
+                                        <option>RUB</option>
+                                        <option>USD</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Сумма</label>
+                            <div class="control">
+                                <input class="input" type="number" placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div class="field is-grouped is-grouped-multiline is-grouped-centered">
+                            <div class="control">
+                                <button class="button is-success" type="submit">Положить</button>
+                            </div>
+                            <div class="control">
+                                <button class="button is-warning">Снять</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="section grid" data-tab-content="transfers">
+            <div class="cell is-col-span-2">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">Между своими счетами</p>
+                    </header>
+                    <form class="card-content">
+                        <div class="field is-grouped">
+                            <div class="field">
+                                <label class="label">Со счета</label>
+                                <div class="control">
+                                    <div class="select">
+                                        <select>
+                                            <option>RUB</option>
+                                            <option>USD</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">На счет</label>
+                                <div class="control">
+                                    <div class="select">
+                                        <select>
+                                            <option>RUB</option>
+                                            <option>USD</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Сумма перевода</label>
+                            <div class="control">
+                                <input class="input" type="number" placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div class="field is-grouped is-grouped-centered">
+                            <div class="control">
+                                <button class="button is-success" type="submit">Перевести</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="cell is-col-span-2">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">На счёт другого аккаунта</p>
+                    </header>
+                    <form class="card-content">
+                        <div class="field">
+                            <label class="label">Со своего счета</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select>
+                                        <option>RUB</option>
+                                        <option>USD</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Счет получателя</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Счет получателя">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Сумма перевода</label>
+                            <div class="control">
+                                <input class="input" type="number" placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div class="field is-grouped is-grouped-centered">
+                            <div class="control">
+                                <button class="button is-success" type="submit">Оправить</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="section grid" data-tab-content="rates">
+            <div class="cell is-col-span-2">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">Курсы валют</p>
+                    </header>
+                    <div class="card-content">
+                        <table class="table is-striped is-fullwidth">
+                            <thead>
+                            <tr>
+                                <th>Валюта</th>
+                                <th>Покупка</th>
+                                <th>Продажа</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr>
+                                <td><b>USD</b></td>
+                                <td class="has-text-success">91.20</td>
+                                <td class="has-text-danger">92.05</td>
+                            </tr>
+                            <tr>
+                                <td><b>EUR</b></td>
+                                <td class="has-text-success">98.40</td>
+                                <td class="has-text-danger">99.60</td>
+                            </tr>
+                            <tr>
+                                <td><b>CNY</b></td>
+                                <td class="has-text-success">12.55</td>
+                                <td class="has-text-danger">12.78</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section grid" data-tab-content="settings">
+            <div class="cell is-col-span-2">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">Профиль</p>
+                    </header>
+                    <form class="card-content">
+                        <div class="field">
+                            <label class="label">Логин</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Логин" disabled>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">ФИО</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="ФИО">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Почта</label>
+                            <div class="control">
+                                <input class="input" type="email" placeholder="Почта">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Дата рождения</label>
+                            <div class="control">
+                                <input class="input" type="date" placeholder="Дата рождения">
+                            </div>
+                        </div>
+                        <div class="field is-grouped is-grouped-multiline is-grouped-centered">
+                            <div class="control">
+                                <button class="button is-success" type="submit">Изменить</button>
+                            </div>
+                            <div class="control">
+                                <button class="button is-danger is-outlined">Удалить аккаунт</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="cell is-col-span-2">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">Смена пароля</p>
+                    </header>
+                    <form class="card-content">
+                        <div class="field">
+                            <label class="label">Новый пароль</label>
+                            <div class="control">
+                                <input class="input is-warning" type="text" placeholder="********">
+                            </div>
+                        </div>
+                        <div class="field is-grouped is-grouped-centered">
+                            <div class="control">
+                                <button class="button is-success" type="submit">Изменить пароль</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabs = document.querySelectorAll('.tabs li');
+        const contents = document.querySelectorAll('[data-tab-content]');
+
+        const showTab = (target) => {
+            tabs.forEach(t => {
+                t.classList.toggle('is-active', t.querySelector('a').dataset.tab === target);
+            });
+            contents.forEach(content => {
+                content.classList.toggle('is-hidden', content.dataset.tabContent !== target);
+            });
+        };
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                showTab(tab.querySelector('a').dataset.tab);
+            });
+        });
+
+        // Инициализация при загрузке: показываем активную вкладку (или первую)
+        const activeTab = document.querySelector('.tabs li.is-active a')
+            || document.querySelector('.tabs li a');
+        if (activeTab) {
+            showTab(activeTab.dataset.tab);
+        }
+    });
+</script>
+</body>
+</html>
