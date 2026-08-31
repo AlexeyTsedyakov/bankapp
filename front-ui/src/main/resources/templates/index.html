@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bankapp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body>
+<header class="section is-flex is-justify-content-space-between is-align-items-center">
+    <div>
+        <span class="title">Bankapp</span>
+    </div>
+    <div sec:authorize="isAuthenticated()"
+         class="is-flex is-align-items-center is-gap-1">
+        <strong sec:authentication="name">Username</strong>
+        <form class="is-display-inline" th:action="@{/logout}" method="post">
+            <button type="submit" class="button is-ghost has-text-danger has-text-weight-semibold p-0">
+                Выйти
+            </button>
+        </form>
+    </div>
+</header>
+
+<main class="has-background">
+    <div class="container" x-data="{ currentTab: 'overview' }">
+        <nav class="section pb-0">
+            <div class="tabs is-boxed">
+                <ul>
+                    <li :class="{ 'is-active': currentTab === 'overview' }">
+                        <a @click="currentTab = 'overview'"
+                           hx-get="/overview"
+                           hx-target="#tab-content"
+                           hx-swap="innerHTML">Обзор</a>
+                    </li>
+                    <li :class="{ 'is-active': currentTab === 'transfers' }">
+                        <a @click="currentTab = 'transfers'"
+                           hx-get="/transfers"
+                           hx-target="#tab-content"
+                           hx-swap="innerHTML">Переводы</a>
+                    </li>
+                    <li :class="{ 'is-active': currentTab === 'rates' }">
+                        <a @click="currentTab = 'rates'"
+                           hx-get="/rates"
+                           hx-target="#tab-content"
+                           hx-swap="innerHTML">Курсы валют</a>
+                    </li>
+                    <li :class="{ 'is-active': currentTab === 'settings' }">
+                        <a @click="currentTab = 'settings'"
+                           hx-get="/settings"
+                           hx-target="#tab-content"
+                           hx-swap="innerHTML">Настройки</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div id="tab-content"
+             hx-get="/overview"
+             hx-trigger="load"
+             hx-swap="innerHTML">
+        </div>
+    </div>
+</main>
+</body>
+</html>

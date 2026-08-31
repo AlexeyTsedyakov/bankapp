@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bankapp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body>
+
+<!-- Вкладка: Курсы валют -->
+<div th:fragment="rates-tab" class="section grid">
+    <div class="cell is-col-span-2">
+        <section class="card" aria-labelledby="rates-heading">
+            <header class="card-header">
+                <h2 id="rates-heading" class="card-header-title">Курсы валют</h2>
+            </header>
+
+            <div class="card-content">
+                <table class="table is-striped is-fullwidth">
+                    <thead>
+                    <tr>
+                        <th scope="col">Валюта</th>
+                        <th scope="col">Покупка</th>
+                        <th scope="col">Продажа</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td><b>USD</b></td>
+                        <td class="has-text-success">91.20</td>
+                        <td class="has-text-danger">92.05</td>
+                    </tr>
+                    <tr>
+                        <td><b>EUR</b></td>
+                        <td class="has-text-success">98.40</td>
+                        <td class="has-text-danger">99.60</td>
+                    </tr>
+                    <tr>
+                        <td><b>CNY</b></td>
+                        <td class="has-text-success">12.55</td>
+                        <td class="has-text-danger">12.78</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+</body>

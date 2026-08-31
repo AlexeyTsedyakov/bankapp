@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bankapp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body>
+
+<!-- Вкладка: Переводы -->
+<div th:fragment="transfers-tab" class="section grid" >
+    <div class="cell is-col-span-2">
+        <section class="card" aria-labelledby="internal-transfer-heading">
+            <header class="card-header">
+                <h2 id="internal-transfer-heading" class="card-header-title">Между своими счетами</h2>
+            </header>
+
+            <form class="card-content">
+                <div class="field is-grouped">
+                    <div class="field">
+                        <label class="label">Со счета</label>
+                        <div class="control">
+                            <div class="select">
+                                <select>
+                                    <option>RUB</option>
+                                    <option>USD</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">На счет</label>
+                        <div class="control">
+                            <div class="select">
+                                <select>
+                                    <option>RUB</option>
+                                    <option>USD</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Сумма перевода</label>
+                    <div class="control">
+                        <input class="input" type="number" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="field is-grouped is-grouped-centered">
+                    <div class="control">
+                        <button class="button is-success" type="submit">Перевести</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <div class="cell is-col-span-2">
+        <section class="card" aria-labelledby="external-transfer-heading">
+            <header class="card-header">
+                <h2 id="external-transfer-heading" class="card-header-title">На счёт другого аккаунта</h2>
+            </header>
+
+            <form class="card-content">
+                <div class="field">
+                    <label class="label">Со своего счета</label>
+                    <div class="control">
+                        <div class="select">
+                            <select>
+                                <option>RUB</option>
+                                <option>USD</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Счет получателя</label>
+                    <div class="control">
+                        <input class="input" type="text" placeholder="Счет получателя">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Сумма перевода</label>
+                    <div class="control">
+                        <input class="input" type="number" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="field is-grouped is-grouped-centered">
+                    <div class="control">
+                        <button class="button is-success" type="submit">Отправить</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+</body>

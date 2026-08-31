@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:hx="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bankapp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body>
+
+<!-- Вкладка: Обзор -->
+<div th:fragment="overview-tab" id="overview-tab" class="section grid">
+    <div class="cell is-col-span-2">
+        <section class="card">
+            <header class="card-header">
+                <p class="card-header-title">Мои счета</p>
+            </header>
+
+            <div id="bank-accounts-card"
+                 class="card-content is-flex is-flex-direction-column is-align-items-center">
+                <div th:if="${accountsServiceErrorMessage}" class="notification is-danger is-light is-fullwidth">
+                    <span th:text="${accountsServiceErrorMessage}">Ошибка загрузки счетов</span>
+                </div>
+
+                <table th:unless="${accountsServiceErrorMessage}" class="table is-striped is-fullwidth">
+                    <thead>
+                    <tr>
+                        <th>Номер</th>
+                        <th>Валюта</th>
+                        <th>Баланс</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="account : ${bankAccounts}">
+                        <td th:text="${account.accountNumber}">00000001</td>
+                        <td th:text="${account.currency}">RUB</td>
+                        <td th:text="${#numbers.formatDecimal(account.balance, 1, 'WHITESPACE', 2, 'COMMA')}">
+                            127 000,02
+                        </td>
+                        <td>
+                            <form hx:delete="@{/overview/bank-accounts/{id} (id=${account.id})}"
+                                  hx-target="#overview-tab"
+                                  hx-swap="outerHTML">
+                                <button class="button is-small is-danger is-outlined" type="submit"
+                                        title="Удалить">
+                                            <span class="icon">
+                                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                            </span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(bankAccounts)}">
+                        <td colspan="4" class="has-text-centered has-text-grey">У вас пока нет открытых счетов
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <form th:if="${accountsServiceErrorMessage == null and not #sets.isEmpty(availableCurrencies)}"
+                      hx:post="@{/overview/bank-accounts}"
+                      hx-target="#overview-tab"
+                      hx-swap="outerHTML">
+                    <div class="field has-addons">
+                        <div class="control">
+                            <div class="select">
+                                <select name="currency">
+                                    <option th:each="currency : ${availableCurrencies}"
+                                            th:value="${currency}" th:text="${currency}">
+                                        RUB
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control">
+                            <button class="button is-success" type="submit">+ Добавить новый счет</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <div class="cell is-col-span-2">
+        <section class="card">
+            <header class="card-header">
+                <p class="card-header-title">Внесение / снятие</p>
+            </header>
+
+            <form class="card-content">
+                <div class="field">
+                    <label class="label">Счет</label>
+                    <div class="control">
+                        <div th:unless="${#lists.isEmpty(bankAccounts)}" class="select">
+                            <select>
+                                <!--/*@thymesVar id="account" type="org.example.bankapp.front.integration.accounts.client.dto.response.BankAccountResponse"*/-->
+                                <option th:each="account : ${bankAccounts}"
+                                        th:value="${account.currency}" th:text="${account.currency}">
+                                    RUB
+                                </option>
+                            </select>
+                        </div>
+                        <div th:if="${#lists.isEmpty(bankAccounts)}" class="control">
+                            <input class="input" type="text" value="У вас пока нет открытых счетов" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Сумма</label>
+                    <div class="control">
+                        <input class="input" type="number" min="0.01" placeholder="0.00" required>
+                    </div>
+                </div>
+
+                <div class="field is-grouped is-grouped-multiline is-grouped-centered">
+                    <div class="control">
+                        <button th:disabled="${#lists.isEmpty(bankAccounts)}" class="button is-success" type="submit">
+                            Положить
+                        </button>
+                    </div>
+                    <div class="control">
+                        <button th:disabled="${#lists.isEmpty(bankAccounts)}" class="button is-warning">
+                            Снять
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+
+</div>
+
+</body>

@@ -1,3 +1,3 @@
 rootProject.name = "bankapp"
 
-include("front-ui")
+include("front-ui", "accounts")

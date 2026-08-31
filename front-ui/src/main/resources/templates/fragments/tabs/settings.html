@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:hx="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bankapp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body>
+<div th:fragment="settings-tab" id="settings-tab" class="section grid">
+    <div class="cell is-col-span-2">
+        <section th:fragment="profile-card" id="profile-card" class="card">
+            <header class="card-header">
+                <p class="card-header-title">Профиль</p>
+            </header>
+
+            <div class="card-content">
+                <div th:if="${accountsServiceErrorMessage}" class="notification is-danger is-light">
+                    <span th:text="${accountsServiceErrorMessage}"></span>
+                </div>
+                <div th:fragment="profile-error-notification" id="profile-error-notification">
+                    <div th:if="${accountsRequestErrorMessage}" class="notification is-danger is-light"
+                         x-data="{ show: true }" x-show="show" x-transition>
+                        <button class="delete" type="button" @click="show = false"></button>
+                        <span th:text="${accountsRequestErrorMessage}"></span>
+                    </div>
+                </div>
+                <div th:if="${userUpdatedMessage}" class="notification is-success is-light"
+                     x-data="{ show: true }" x-show="show" x-transition>
+                    <button class="delete" type="button" @click="show = false"></button>
+                    <span th:text="${userUpdatedMessage}"></span>
+                </div>
+
+                <div th:unless="${accountsErrorMessage}">
+                    <!--/*@thymesVar id="userUpdateRequest" type="org.example.bankapp.front.integration.accounts.client.dto.request.UserUpdateRequest"*/-->
+                    <form id="update-form"
+                          hx:put="@{/settings/user}"
+                          hx-target="#profile-card"
+                          hx-swap="outerHTML"
+                          th:object="${userUpdateRequest}">
+
+                        <div class="field">
+                            <label class="label">Логин</label>
+                            <div class="control">
+                                <input class="input" type="text" th:value="${#authentication.name}"
+                                       placeholder="Логин" disabled>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Имя</label>
+                            <div class="control">
+                                <input class="input" th:errorclass="is-danger" type="text" th:field="*{firstName}"
+                                       placeholder="Иван" required>
+                            </div>
+                            <p class="help is-danger" th:if="${#fields?.hasErrors('firstName')}"
+                               th:errors="*{firstName}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Фамилия</label>
+                            <div class="control">
+                                <input class="input" th:errorclass="is-danger" type="text" th:field="*{lastName}"
+                                       placeholder="Иванов" required>
+                            </div>
+                            <p class="help is-danger" th:if="${#fields?.hasErrors('lastName')}"
+                               th:errors="*{lastName}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Дата рождения</label>
+                            <div class="control">
+                                <input class="input" th:errorclass="is-danger" type="date" th:field="*{birthDate}"
+                                       placeholder="Дата рождения" required>
+                            </div>
+                            <p class="help is-danger" th:if="${#fields?.hasErrors('birthDate')}"
+                               th:errors="*{birthDate}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Почта</label>
+                            <div class="control">
+                                <input class="input" th:errorclass="is-danger" type="email" th:field="*{email}"
+                                       placeholder="email@example.com">
+                            </div>
+                            <p class="help is-danger" th:if="${#fields?.hasErrors('email')}"
+                               th:errors="*{email}">
+                            </p>
+                        </div>
+                    </form>
+
+                    <form id="delete-form"
+                          hx:delete="@{/settings/user}"
+                          hx-target="#profile-error-notification"
+                          hx-swap="outerHTML"
+                          hx-confirm="Вы уверены, что хотите удалить аккаунт?">
+                    </form>
+
+                    <div class="field is-grouped is-grouped-multiline is-grouped-centered mt-4">
+                        <div class="control">
+                            <button class="button is-success" type="submit" form="update-form">
+                                Изменить
+                            </button>
+                        </div>
+                        <div class="control">
+                            <button class="button is-danger is-outlined" type="submit" form="delete-form">
+                                Удалить аккаунт
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="cell is-col-span-2">
+        <section th:fragment="change-password-card" id="change-password-card" class="card">
+            <header class="card-header">
+                <p class="card-header-title">Смена пароля</p>
+            </header>
+
+            <form class="card-content">
+                <div th:if="${accountsServiceErrorMessage}" class="notification is-danger is-light">
+                    <span th:text="${accountsServiceErrorMessage}"></span>
+                </div>
+                <div th:if="${accountsRequestErrorMessage}" class="notification is-danger is-light"
+                     x-data="{ show: true }" x-show="show" x-transition>
+                    <button class="delete" type="button" @click="show = false"></button>
+                    <span th:text="${accountsRequestErrorMessage}"></span>
+                </div>
+                <div th:if="${passwordUpdatedMessage}" class="notification is-success is-light"
+                     x-data="{ show: true }" x-show="show" x-transition>
+                    <button class="delete" type="button" @click="show = false"></button>
+                    <span th:text="${passwordUpdatedMessage}"></span>
+                </div>
+
+                <div th:unless="${accountsErrorMessage}">
+                    <!--/*@thymesVar id="passwordUpdateRequest" type="org.example.bankapp.front.integration.accounts.client.dto.request.PasswordUpdateRequest"*/-->
+                    <form hx:patch="@{/settings/user/password}"
+                          hx-target="#change-password-card"
+                          hx-swap="outerHTML"
+                          th:object="${passwordUpdateRequest}">
+
+                        <div class="field" x-data="{ show: false }">
+                            <label class="label">Новый пароль</label>
+                            <div class="control has-icons-right">
+                                <input class="input is-warning" th:errorclass="is-danger" th:field="*{newPassword}"
+                                       :type="show ? 'text' : 'password'" placeholder="********" required>
+                                <span class="icon is-right" @click="show = !show"
+                                      style="pointer-events: all; cursor: pointer;">
+                                    <i class="fa-solid" :class="show ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                </span>
+                            </div>
+                            <p class="help is-danger" th:if="${#fields?.hasErrors('newPassword')}"
+                               th:errors="*{newPassword}">
+                            </p>
+                        </div>
+                        <div class="field is-grouped is-grouped-centered">
+                            <div class="control">
+                                <button class="button is-success" type="submit">Изменить пароль</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+</body>
+</html>

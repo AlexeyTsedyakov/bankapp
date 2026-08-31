@@ -14,9 +14,15 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
-    compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+    implementation(libs.htmx.spring.boot)
+    implementation(libs.htmx.spring.boot.thymeleaf)
+    compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor(libs.lombok.mapstruct.binding)
+    implementation(libs.mapstruct)
+    annotationProcessor(libs.mapstruct.processor)
+
 
     testImplementation("org.springframework.boot:spring-boot-starter-restclient-test")
     testImplementation("org.springframework.boot:spring-boot-starter-security-oauth2-client-test")

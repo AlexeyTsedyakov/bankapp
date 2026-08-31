@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bankapp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+</head>
+
+<body>
+<header class="section is-flex is-justify-content-space-between is-align-items-center">
+    <div>
+        <span class="title">Bankapp</span>
+    </div>
+    <div sec:authorize="isAuthenticated()">
+        <span sec:authentication="name">Username</span>
+        <form class="is-display-inline" th:action="@{/logout}" method="post">
+            <button type="submit" class="button is-ghost has-text-danger p-0">Выйти</button>
+        </form>
+    </div>
+</header>
+
+<main class="has-background">
+    <section class="section is-flex is-justify-content-center">
+        <div class="columns">
+            <div class="column is-narrow">
+                <div class="card" style="width: 400px">
+                    <header class="card-header">
+                        <p class="card-header-title">Регистрация</p>
+                    </header>
+
+                    <form class="card-content" th:action="@{/register}" method="post" th:object="${userRegisterRequest}">
+                        <div class="notification is-danger is-light" th:if="${#fields.hasGlobalErrors()}">
+                            <p th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Логин</label>
+                            <div class="control">
+                                <input class="input" th:errorclass="is-danger" type="text" th:field="*{username}"
+                                       placeholder="Логин" required>
+                            </div>
+                            <p class="help is-danger" th:if="${#fields.hasErrors('username')}"
+                               th:errors="*{username}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Пароль</label>
+                            <div class="control">
+                                <input class="input" th:errorclass="is-danger" type="password" th:field="*{password}"
+                                       placeholder="********" required>
+                            </div>
+                            <p class="help is-danger" th:if="${#fields.hasErrors('password')}"
+                               th:errors="*{password}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Имя</label>
+                            <div class="control">
+                                <input class="input" th:errorclass="is-danger" type="text" th:field="*{firstName}"
+                                       placeholder="Иван" required>
+                            </div>
+                            <p class="help is-danger" th:if="${#fields.hasErrors('firstName')}"
+                               th:errors="*{firstName}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Фамилия</label>
+                            <div class="control">
+                                <input class="input" th:errorclass="is-danger" type="text" th:field="*{lastName}"
+                                       placeholder="Иванов" required>
+                            </div>
+                            <p class="help is-danger" th:if="${#fields.hasErrors('lastName')}"
+                               th:errors="*{lastName}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Дата рождения</label>
+                            <div class="control">
+                                <input class="input" th:errorclass="is-danger" type="date" th:field="*{birthDate}"
+                                       placeholder="Дата рождения" required>
+                            </div>
+                            <p class="help is-danger" th:if="${#fields.hasErrors('birthDate')}"
+                               th:errors="*{birthDate}">
+                            </p>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Почта</label>
+                            <div class="control">
+                                <input class="input" th:errorclass="is-danger" type="email" th:field="*{email}"
+                                       placeholder="mail@example.com">
+                            </div>
+                            <p class="help is-danger" th:if="${#fields.hasErrors('email')}"
+                               th:errors="*{email}">
+                            </p>
+                        </div>
+
+                        <div class="field is-grouped is-grouped-centered">
+                            <div class="control">
+                                <button class="button is-success" type="submit">Создать аккаунт</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
