@@ -18,14 +18,14 @@ spring:
         registration:
           oauth2-service-client:
             provider: keycloak
-            client-id: bankapp-front-ui
+            client-id: front-ui
             client-secret: ${KC_CLIENT_SECRET_FRONT_UI}
             authorization-grant-type: client_credentials
             scope:
               - openid
         provider:
           keycloak:
-            issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/master
+            issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/${KC_REALM}
   http:
     serviceclient:
       accounts:

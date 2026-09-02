@@ -24,16 +24,16 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/master
+          issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/${KC_REALM}
       client:
         registration:
           oauth2-service-client:
             provider: keycloak
-            client-id: bankapp-accounts
+            client-id: accounts
             client-secret: ${KC_CLIENT_SECRET_ACCOUNTS}
             authorization-grant-type: client_credentials
             scope:
               - openid
         provider:
           keycloak:
-            issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/master
+            issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/${KC_REALM}

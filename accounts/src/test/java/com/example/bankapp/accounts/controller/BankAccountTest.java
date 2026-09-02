@@ -49,7 +49,7 @@ public class BankAccountTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void createBankAccount_withNonExistingUserCurrency_returns200() {
         var request = mockMvc.post()
                 .uri("/bank-accounts")
@@ -66,7 +66,7 @@ public class BankAccountTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void createBankAccount_withExistingUserCurrency_returns409() {
         var request = mockMvc.post()
                 .uri("/bank-accounts")
@@ -78,7 +78,7 @@ public class BankAccountTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void deleteBankAccount_withExistingAccount_returns204() throws UnsupportedEncodingException {
         BankAccountResponse accountDto = createBankAccount();
         var request = mockMvc.delete()

@@ -53,7 +53,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void registerUser_NonExistingUsername_returns200() {
         var request = mockMvc.post()
                 .uri("/users")
@@ -70,7 +70,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void registerUser_ExistingUsername_returns409() {
         var request = mockMvc.post()
                 .uri("/users")
@@ -82,7 +82,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void getUserWithBankAccounts_ExistingId_returns200() throws UnsupportedEncodingException {
         UserResponse responseDto = registerUser();
         var getUserRequest = mockMvc.get()
@@ -96,7 +96,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void getUserBankAccounts_NonExistingId_returns404() {
         var request = mockMvc.get()
                 .uri("/users/{id}", 999L);
@@ -105,7 +105,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void getUserCredentials_ExistingUsername_returns200() {
         mockMvc.post()
                 .uri("/users")
@@ -125,7 +125,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void getUserCredentials_NonExistingUsername_returns404() {
         var request = mockMvc.get()
                 .uri("/users/{username}/credentials", "NonExistentUsername");
@@ -134,7 +134,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void updateUser_ExistingUser_returns200() throws UnsupportedEncodingException {
         UserResponse responseDto = registerUser();
         UserUpdateRequest updateRequestDto = UserUpdateRequest.builder()
@@ -156,7 +156,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void updateUser_NonExistingUser_returns404() {
         UserUpdateRequest updateRequestDto = UserUpdateRequest.builder()
                 .firstName("firstName")
@@ -174,7 +174,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void updateUserPassword_userIdWithNewPassword_returns204() throws UnsupportedEncodingException {
         UserResponse userDto = registerUser();
         PasswordUpdateRequest passwordUpdateRequest = new PasswordUpdateRequest("newPassword");
@@ -188,7 +188,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void deleteUser_userWithoutBankAccounts_returns204() throws UnsupportedEncodingException {
         UserResponse userDto = registerUser();
         var request = mockMvc.delete()
@@ -199,7 +199,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "accounts-access")
     void deleteUser_userWithBankAccounts_returns409() throws UnsupportedEncodingException {
         UserResponse userDto = registerUser();
         createBankAccount(userDto.id());

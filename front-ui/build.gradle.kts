@@ -19,10 +19,6 @@ dependencies {
     implementation(libs.htmx.spring.boot.thymeleaf)
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
-    annotationProcessor(libs.lombok.mapstruct.binding)
-    implementation(libs.mapstruct)
-    annotationProcessor(libs.mapstruct.processor)
-
 
     testImplementation("org.springframework.boot:spring-boot-starter-restclient-test")
     testImplementation("org.springframework.boot:spring-boot-starter-security-oauth2-client-test")
