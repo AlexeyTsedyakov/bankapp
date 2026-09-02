@@ -12,13 +12,13 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    User toEntity(UserRegisterRequest dto);
+    User toEntity(UserRegisterRequest registerRequest);
 
-    User toEntity(UserUpdateRequest request);
+    User toEntity(UserUpdateRequest updateRequest);
 
-    UserResponse toUserResponseDto(User entity);
+    UserResponse toUserResponse(User entity);
 
-    UserCredentialsResponse toUserCredentialsResponseDto(User entity);
+    UserCredentialsResponse toUserCredentialsResponse(User entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void patchEntity(User source, @MappingTarget User target);

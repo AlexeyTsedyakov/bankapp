@@ -16,6 +16,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
@@ -82,8 +83,32 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithAnonymousUser
+    void registerUser_anonymousUser_returns401() {
+        var request = mockMvc.post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerRequestDto));
+
+        assertThat(request)
+                .hasStatus(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    @WithMockUser
+    void registerUser_user_withoutRole_returns403() {
+        var request = mockMvc.post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerRequestDto));
+
+        assertThat(request)
+                .hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
     @WithMockUser(roles = "accounts-access")
-    void getUserWithBankAccounts_ExistingId_returns200() throws UnsupportedEncodingException {
+    void getUser_ExistingId_returns200() throws UnsupportedEncodingException {
         UserResponse responseDto = registerUser();
         var getUserRequest = mockMvc.get()
                 .uri("/users/{id}", responseDto.id());
@@ -91,13 +116,13 @@ public class UserControllerTest {
         assertThat(getUserRequest)
                 .hasStatusOk()
                 .bodyJson()
-                .hasPathSatisfying("$.user.id", id ->
+                .hasPathSatisfying("$.id", id ->
                         assertThat(id).convertTo(Long.class).isEqualTo(responseDto.id()));
     }
 
     @Test
     @WithMockUser(roles = "accounts-access")
-    void getUserBankAccounts_NonExistingId_returns404() {
+    void getUserBank_NonExistingId_returns404() {
         var request = mockMvc.get()
                 .uri("/users/{id}", 999L);
         assertThat(request)

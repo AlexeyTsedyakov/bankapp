@@ -7,11 +7,13 @@ import org.example.bankapp.front.integration.accounts.dto.request.UserUpdateRequ
 import org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse;
 import org.example.bankapp.front.integration.accounts.dto.response.UserCredentialsResponse;
 import org.example.bankapp.front.integration.accounts.dto.response.UserResponse;
-import org.example.bankapp.front.integration.accounts.dto.response.UserWithBankAccountsResponse;
 import org.springframework.security.oauth2.client.annotation.ClientRegistrationId;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.*;
+
+import java.util.List;
 
 @SuppressWarnings("UnusedReturnValue")
 @HttpExchange("/accounts")
@@ -21,11 +23,11 @@ public interface AccountsServiceClient {
     @PostExchange("/users")
     UserResponse registerUser(@RequestBody UserRegisterRequest request);
 
+    @GetExchange("/users/{id}")
+    UserResponse getUser(@PathVariable Long id);
+
     @PutExchange("/users/{id}")
     UserResponse updateUser(@PathVariable Long id, @RequestBody UserUpdateRequest request);
-
-    @GetExchange("/users/{id}")
-    UserWithBankAccountsResponse getUserWithBankAccounts(@PathVariable Long id);
 
     @GetExchange("/users/{username}/credentials")
     UserCredentialsResponse getUserCredentials(@PathVariable String username);
@@ -38,6 +40,9 @@ public interface AccountsServiceClient {
 
     @PostExchange("/bank-accounts")
     BankAccountResponse createBankAccount(@RequestBody BankAccountCreateRequest request);
+
+    @GetExchange("/bank-accounts")
+    List<BankAccountResponse> getUserBankAccounts(@RequestParam Long userId);
 
     @DeleteExchange("/bank-accounts/{id}")
     void deleteBankAccount(@PathVariable Long id);

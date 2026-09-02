@@ -1,11 +1,11 @@
 package com.example.bankapp.accounts.mapper;
 
 import com.example.bankapp.accounts.controller.dto.request.BankAccountCreateRequest;
+import com.example.bankapp.accounts.controller.dto.request.BankAccountUpdateRequest;
 import com.example.bankapp.accounts.controller.dto.response.BankAccountResponse;
 import com.example.bankapp.accounts.model.BankAccount;
 import com.example.bankapp.accounts.model.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 
 import java.util.List;
@@ -13,12 +13,18 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface BankAccountMapper {
     @Mapping(target = "user", source = "userId")
-    BankAccount toEntity(BankAccountCreateRequest dto);
+    BankAccount toEntity(BankAccountCreateRequest createRequest);
+
+    @Mapping(target = "user", source = "userId")
+    BankAccount toEntity(BankAccountUpdateRequest updateRequest);
 
     @Mapping(target = "userId", source = "user.id")
-    BankAccountResponse toBankAccountResponseDto(BankAccount entity);
+    BankAccountResponse toBankAccountResponse(BankAccount entity);
 
-    List<BankAccountResponse> toBankAccountResponseDtoList(List<BankAccount> entities);
+    List<BankAccountResponse> toBankAccountResponseList(List<BankAccount> entities);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void patchEntity(BankAccount source, @MappingTarget BankAccount target);
 
     default AggregateReference<User, Long> toUserReference(Long userId) {
         return userId != null ? AggregateReference.to(userId) : null;

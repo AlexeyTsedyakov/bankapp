@@ -4,13 +4,15 @@ import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.bankapp.front.auth.UserDetailsImpl;
 import org.example.bankapp.front.common.model.Currency;
-import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
 import org.example.bankapp.front.integration.accounts.AccountsGateway;
+import org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse;
+import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 @RequiredArgsConstructor
@@ -61,10 +63,10 @@ public class OverviewController {
     }
 
     private void fillModel(Model model, Long userId) {
-        var userWithBankAccounts = accountsGateway.getUserWithBankAccounts(userId);
-        Set<Currency> availableCurrencies = accountsGateway.getAvailableCurrencies(userWithBankAccounts);
+        List<BankAccountResponse> userBankAccounts = accountsGateway.getUserBankAccounts(userId);
+        Set<Currency> availableCurrencies = accountsGateway.getAvailableCurrencies(userBankAccounts);
 
-        model.addAttribute("bankAccounts", userWithBankAccounts.bankAccounts());
+        model.addAttribute("bankAccounts", userBankAccounts);
         model.addAttribute("availableCurrencies", availableCurrencies);
     }
 }

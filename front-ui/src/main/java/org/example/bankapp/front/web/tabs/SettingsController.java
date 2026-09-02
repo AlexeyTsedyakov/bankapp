@@ -32,7 +32,7 @@ public class SettingsController {
     public String getSettingsTab(Model model, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long userId = userDetails.getId();
         try {
-            UserResponse user = accountsGateway.getUserWithBankAccounts(userId).user();
+            UserResponse user = accountsGateway.getUser(userId);
             model.addAttribute("userUpdateRequest", createUserUpdateRequest(user));
         } catch (AccountsServiceException e) {
             model.addAttribute("accountsServiceErrorMessage", e.getMessage());

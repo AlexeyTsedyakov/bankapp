@@ -55,6 +55,14 @@ public class UserService {
     }
 
     @Transactional
+    public void updatePassword(Long id, String newPassword) {
+        User user = findByIdOrThrow(id);
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        repository.save(user);
+    }
+
+    @Transactional
     public void delete(Long id) {
         List<BankAccount> bankAccounts = bankAccountService.findAllByUserId(id);
         if (!bankAccounts.isEmpty()) {
@@ -62,14 +70,6 @@ public class UserService {
         }
 
         repository.deleteById(id);
-    }
-
-    @Transactional
-    public void updatePassword(Long id, String newPassword) {
-        User user = findByIdOrThrow(id);
-        user.setPassword(passwordEncoder.encode(newPassword));
-
-        repository.save(user);
     }
 
     private User findByIdOrThrow(Long id) {

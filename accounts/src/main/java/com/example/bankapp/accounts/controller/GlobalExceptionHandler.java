@@ -1,5 +1,6 @@
 package com.example.bankapp.accounts.controller;
 
+import com.example.bankapp.accounts.exception.InvalidBalanceException;
 import com.example.bankapp.accounts.exception.EntityAlreadyExistsException;
 import com.example.bankapp.accounts.exception.EntityNotFoundException;
 import com.example.bankapp.accounts.exception.UserHasBankAccountsException;
@@ -25,6 +26,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserHasBankAccountsException.class)
     public ProblemDetail handleUserHasBankAccounts(UserHasBankAccountsException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidBalanceException.class)
+    public ProblemDetail handleInvalidBalance(InvalidBalanceException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

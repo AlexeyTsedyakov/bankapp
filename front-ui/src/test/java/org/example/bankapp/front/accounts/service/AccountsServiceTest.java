@@ -35,7 +35,7 @@ class AccountsGatewayIntegrationTest {
 
     @Test
     void getUserWithBankAccount_nonExistingId_throwException() {
-        assertThatThrownBy(() -> accountsGateway.getUserWithBankAccounts(9999L))
+        assertThatThrownBy(() -> accountsGateway.getUser(9999L))
                 .isInstanceOf(AccountsServiceException.class);
     }
 }

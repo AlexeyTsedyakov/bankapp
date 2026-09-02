@@ -8,7 +8,7 @@ import org.example.bankapp.front.integration.accounts.dto.request.PasswordUpdate
 import org.example.bankapp.front.integration.accounts.dto.request.UserRegisterRequest;
 import org.example.bankapp.front.integration.accounts.dto.request.UserUpdateRequest;
 import org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse;
-import org.example.bankapp.front.integration.accounts.dto.response.UserWithBankAccountsResponse;
+import org.example.bankapp.front.integration.accounts.dto.response.UserResponse;
 import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -16,6 +16,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -35,9 +36,9 @@ public class AccountsGateway {
         }
     }
 
-    public UserWithBankAccountsResponse getUserWithBankAccounts(Long userId) {
+    public UserResponse getUser(Long userId) {
         try {
-            return client.getUserWithBankAccounts(userId);
+            return client.getUser(userId);
         } catch (RuntimeException e) {
             handleHttpError(e);
             throw e;
@@ -73,9 +74,9 @@ public class AccountsGateway {
         }
     }
 
-    public Set<Currency> getAvailableCurrencies(UserWithBankAccountsResponse userWithBankAccounts) {
+    public Set<Currency> getAvailableCurrencies(List<BankAccountResponse> userWithBankAccounts) {
         Set<Currency> availableCurrencies = EnumSet.allOf(Currency.class);
-        for (BankAccountResponse bankAccount : userWithBankAccounts.bankAccounts()) {
+        for (BankAccountResponse bankAccount : userWithBankAccounts) {
             availableCurrencies.remove(bankAccount.currency());
         }
 
@@ -89,6 +90,15 @@ public class AccountsGateway {
             client.createBankAccount(request);
         } catch (HttpClientErrorException.Conflict e) {
             throw new AccountsServiceException("Счет в данной валюте уже существует");
+        } catch (RuntimeException e) {
+            handleHttpError(e);
+            throw e;
+        }
+    }
+
+    public List<BankAccountResponse> getUserBankAccounts(Long userId) {
+        try {
+            return client.getUserBankAccounts(userId);
         } catch (RuntimeException e) {
             handleHttpError(e);
             throw e;
