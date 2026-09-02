@@ -1,11 +1,11 @@
-package org.example.bankapp.front.integration.accounts.client.dto.request;
+package org.example.bankapp.front.integration.accounts.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
-import org.example.bankapp.front.integration.accounts.client.validation.MinAge;
+import org.example.bankapp.front.integration.accounts.validation.MinAge;
 
 import java.time.LocalDate;
 

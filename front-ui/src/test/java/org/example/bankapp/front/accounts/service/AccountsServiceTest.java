@@ -1,8 +1,8 @@
 package org.example.bankapp.front.accounts.service;
 
-import org.example.bankapp.front.integration.accounts.client.dto.request.UserRegisterRequest;
+import org.example.bankapp.front.integration.accounts.dto.request.UserRegisterRequest;
 import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
-import org.example.bankapp.front.integration.accounts.service.AccountsService;
+import org.example.bankapp.front.integration.accounts.AccountsGateway;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,9 +14,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class AccountsServiceIntegrationTest {
+class AccountsGatewayIntegrationTest {
     @Autowired
-    private AccountsService accountsService;
+    private AccountsGateway accountsGateway;
 
     @Test
     void registerUser_registerRequestWithBadEmail_throwsException() {
@@ -29,13 +29,13 @@ class AccountsServiceIntegrationTest {
                 .email("email")
                 .build();
 
-        assertThatThrownBy(() -> accountsService.registerUser(registerDto))
+        assertThatThrownBy(() -> accountsGateway.registerUser(registerDto))
                 .isInstanceOf(AccountsServiceException.class);
     }
 
     @Test
     void getUserWithBankAccount_nonExistingId_throwException() {
-        assertThatThrownBy(() -> accountsService.getUserWithBankAccounts(9999L))
+        assertThatThrownBy(() -> accountsGateway.getUserWithBankAccounts(9999L))
                 .isInstanceOf(AccountsServiceException.class);
     }
 }

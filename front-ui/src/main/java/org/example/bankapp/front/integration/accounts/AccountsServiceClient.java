@@ -1,18 +1,19 @@
-package org.example.bankapp.front.integration.accounts.client;
+package org.example.bankapp.front.integration.accounts;
 
-import org.example.bankapp.front.integration.accounts.client.dto.request.BankAccountCreateRequest;
-import org.example.bankapp.front.integration.accounts.client.dto.request.PasswordUpdateRequest;
-import org.example.bankapp.front.integration.accounts.client.dto.request.UserRegisterRequest;
-import org.example.bankapp.front.integration.accounts.client.dto.request.UserUpdateRequest;
-import org.example.bankapp.front.integration.accounts.client.dto.response.BankAccountResponse;
-import org.example.bankapp.front.integration.accounts.client.dto.response.UserCredentialsResponse;
-import org.example.bankapp.front.integration.accounts.client.dto.response.UserResponse;
-import org.example.bankapp.front.integration.accounts.client.dto.response.UserWithBankAccountsResponse;
+import org.example.bankapp.front.integration.accounts.dto.request.BankAccountCreateRequest;
+import org.example.bankapp.front.integration.accounts.dto.request.PasswordUpdateRequest;
+import org.example.bankapp.front.integration.accounts.dto.request.UserRegisterRequest;
+import org.example.bankapp.front.integration.accounts.dto.request.UserUpdateRequest;
+import org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse;
+import org.example.bankapp.front.integration.accounts.dto.response.UserCredentialsResponse;
+import org.example.bankapp.front.integration.accounts.dto.response.UserResponse;
+import org.example.bankapp.front.integration.accounts.dto.response.UserWithBankAccountsResponse;
 import org.springframework.security.oauth2.client.annotation.ClientRegistrationId;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.*;
 
+@SuppressWarnings("UnusedReturnValue")
 @HttpExchange("/accounts")
 @ClientRegistrationId("oauth2-service-client")
 public interface AccountsServiceClient {

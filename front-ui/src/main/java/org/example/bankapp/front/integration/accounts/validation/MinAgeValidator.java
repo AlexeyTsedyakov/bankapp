@@ -1,4 +1,4 @@
-package org.example.bankapp.front.integration.accounts.client.validation;
+package org.example.bankapp.front.integration.accounts.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

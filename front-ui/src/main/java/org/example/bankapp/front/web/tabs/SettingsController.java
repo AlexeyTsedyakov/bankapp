@@ -7,11 +7,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.bankapp.front.auth.UserDetailsImpl;
-import org.example.bankapp.front.integration.accounts.client.dto.request.PasswordUpdateRequest;
-import org.example.bankapp.front.integration.accounts.client.dto.request.UserUpdateRequest;
-import org.example.bankapp.front.integration.accounts.client.dto.response.UserResponse;
+import org.example.bankapp.front.integration.accounts.dto.request.PasswordUpdateRequest;
+import org.example.bankapp.front.integration.accounts.dto.request.UserUpdateRequest;
+import org.example.bankapp.front.integration.accounts.dto.response.UserResponse;
 import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
-import org.example.bankapp.front.integration.accounts.service.AccountsService;
+import org.example.bankapp.front.integration.accounts.AccountsGateway;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/settings")
 public class SettingsController {
-    private final AccountsService accountsService;
+    private final AccountsGateway accountsGateway;
     private final SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
 
     @HxRequest
@@ -32,7 +32,7 @@ public class SettingsController {
     public String getSettingsTab(Model model, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long userId = userDetails.getId();
         try {
-            UserResponse user = accountsService.getUserWithBankAccounts(userId).user();
+            UserResponse user = accountsGateway.getUserWithBankAccounts(userId).user();
             model.addAttribute("userUpdateRequest", createUserUpdateRequest(user));
         } catch (AccountsServiceException e) {
             model.addAttribute("accountsServiceErrorMessage", e.getMessage());
@@ -53,7 +53,7 @@ public class SettingsController {
         }
 
         try {
-            accountsService.updateUser(userDetails.getId(), userUpdateRequest);
+            accountsGateway.updateUser(userDetails.getId(), userUpdateRequest);
         } catch (AccountsServiceException e) {
             model.addAttribute("accountsRequestErrorMessage", e.getMessage());
             return "fragments/tabs/settings :: profile-card";
@@ -73,7 +73,7 @@ public class SettingsController {
         }
 
         try {
-            accountsService.updateUserPassword(userDetails.getId(), passwordUpdateRequest);
+            accountsGateway.updateUserPassword(userDetails.getId(), passwordUpdateRequest);
         } catch (RuntimeException e) {
             model.addAttribute("accountsRequestErrorMessage", e.getMessage());
             return "fragments/tabs/settings :: change-password-card";
@@ -89,7 +89,7 @@ public class SettingsController {
                              HttpServletResponse response, HttpServletRequest request,
                              Authentication authentication) {
         try {
-            accountsService.deleteUser(userDetails.getId());
+            accountsGateway.deleteUser(userDetails.getId());
         } catch (AccountsServiceException e) {
             model.addAttribute("accountsRequestErrorMessage", e.getMessage());
             return "fragments/tabs/settings :: profile-error-notification";

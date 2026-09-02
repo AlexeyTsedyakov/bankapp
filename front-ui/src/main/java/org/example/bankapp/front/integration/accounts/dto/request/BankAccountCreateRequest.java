@@ -1,4 +1,4 @@
-package org.example.bankapp.front.integration.accounts.client.dto.request;
+package org.example.bankapp.front.integration.accounts.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;

@@ -2,9 +2,9 @@ package org.example.bankapp.front.web;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.bankapp.front.integration.accounts.client.dto.request.UserRegisterRequest;
+import org.example.bankapp.front.integration.accounts.dto.request.UserRegisterRequest;
 import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
-import org.example.bankapp.front.integration.accounts.service.AccountsService;
+import org.example.bankapp.front.integration.accounts.AccountsGateway;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 @RequiredArgsConstructor
 @Controller
 public class AuthController {
-    private final AccountsService accountsService;
+    private final AccountsGateway accountsGateway;
 
     @GetMapping("/login")
     public String showLogin() {
@@ -37,7 +37,7 @@ public class AuthController {
         }
 
         try {
-            accountsService.registerUser(userRegisterRequest);
+            accountsGateway.registerUser(userRegisterRequest);
         } catch (AccountsServiceException e) {
             bindingResult.reject("error.user.registration", e.getMessage());
             return "registration";

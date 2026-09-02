@@ -1,6 +1,4 @@
-package org.example.bankapp.front.integration.accounts.client.dto.response;
-
-import org.springframework.format.annotation.DateTimeFormat;
+package org.example.bankapp.front.integration.accounts.dto.response;
 
 import java.time.LocalDate;
 

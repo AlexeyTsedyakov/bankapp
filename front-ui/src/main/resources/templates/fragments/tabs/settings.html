@@ -36,7 +36,7 @@
                 </div>
 
                 <div th:unless="${accountsErrorMessage}">
-                    <!--/*@thymesVar id="userUpdateRequest" type="org.example.bankapp.front.integration.accounts.client.dto.request.UserUpdateRequest"*/-->
+                    <!--/*@thymesVar id="userUpdateRequest" type="org.example.bankapp.front.integration.accounts.dto.request.UserUpdateRequest"*/-->
                     <form id="update-form"
                           hx:put="@{/settings/user}"
                           hx-target="#profile-card"
@@ -142,7 +142,7 @@
                 </div>
 
                 <div th:unless="${accountsErrorMessage}">
-                    <!--/*@thymesVar id="passwordUpdateRequest" type="org.example.bankapp.front.integration.accounts.client.dto.request.PasswordUpdateRequest"*/-->
+                    <!--/*@thymesVar id="passwordUpdateRequest" type="org.example.bankapp.front.integration.accounts.dto.request.PasswordUpdateRequest"*/-->
                     <form hx:patch="@{/settings/user/password}"
                           hx-target="#change-password-card"
                           hx-swap="outerHTML"

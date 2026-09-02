@@ -1,4 +1,4 @@
-package org.example.bankapp.front.integration.accounts.client.dto.response;
+package org.example.bankapp.front.integration.accounts.dto.response;
 
 public record UserCredentialsResponse(
         Long id,

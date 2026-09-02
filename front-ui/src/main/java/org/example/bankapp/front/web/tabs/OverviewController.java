@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.bankapp.front.auth.UserDetailsImpl;
 import org.example.bankapp.front.common.model.Currency;
 import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
-import org.example.bankapp.front.integration.accounts.service.AccountsService;
+import org.example.bankapp.front.integration.accounts.AccountsGateway;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,7 +17,7 @@ import java.util.Set;
 @Controller
 @RequestMapping("/overview")
 public class OverviewController {
-    private final AccountsService accountsService;
+    private final AccountsGateway accountsGateway;
 
     @HxRequest
     @GetMapping
@@ -37,7 +37,7 @@ public class OverviewController {
                                     @RequestParam Currency currency, Model model) {
         Long userId = userDetails.getId();
         try {
-            accountsService.createBankAccount(userId, currency);
+            accountsGateway.createBankAccount(userId, currency);
             fillModel(model, userId);
         } catch (AccountsServiceException e) {
             model.addAttribute("accountsServiceErrorMessage", e.getMessage());
@@ -51,7 +51,7 @@ public class OverviewController {
     public String deleteBankAccount(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                     @PathVariable Long id, Model model) {
         try {
-            accountsService.deleteBankAccount(id);
+            accountsGateway.deleteBankAccount(id);
             fillModel(model, userDetails.getId());
         } catch (AccountsServiceException e) {
             model.addAttribute("accountsServiceErrorMessage", e.getMessage());
@@ -61,8 +61,8 @@ public class OverviewController {
     }
 
     private void fillModel(Model model, Long userId) {
-        var userWithBankAccounts = accountsService.getUserWithBankAccounts(userId);
-        Set<Currency> availableCurrencies = accountsService.getAvailableCurrencies(userWithBankAccounts);
+        var userWithBankAccounts = accountsGateway.getUserWithBankAccounts(userId);
+        Set<Currency> availableCurrencies = accountsGateway.getAvailableCurrencies(userWithBankAccounts);
 
         model.addAttribute("bankAccounts", userWithBankAccounts.bankAccounts());
         model.addAttribute("availableCurrencies", availableCurrencies);

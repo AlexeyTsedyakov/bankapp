@@ -1,8 +1,8 @@
 package org.example.bankapp.front.auth;
 
 import lombok.RequiredArgsConstructor;
-import org.example.bankapp.front.integration.accounts.client.AccountsServiceClient;
-import org.example.bankapp.front.integration.accounts.client.dto.response.UserCredentialsResponse;
+import org.example.bankapp.front.integration.accounts.AccountsServiceClient;
+import org.example.bankapp.front.integration.accounts.dto.response.UserCredentialsResponse;
 import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,15 +1,14 @@
-package org.example.bankapp.front.integration.accounts.service;
+package org.example.bankapp.front.integration.accounts;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.bankapp.front.common.model.Currency;
-import org.example.bankapp.front.integration.accounts.client.AccountsServiceClient;
-import org.example.bankapp.front.integration.accounts.client.dto.request.BankAccountCreateRequest;
-import org.example.bankapp.front.integration.accounts.client.dto.request.PasswordUpdateRequest;
-import org.example.bankapp.front.integration.accounts.client.dto.request.UserRegisterRequest;
-import org.example.bankapp.front.integration.accounts.client.dto.request.UserUpdateRequest;
-import org.example.bankapp.front.integration.accounts.client.dto.response.BankAccountResponse;
-import org.example.bankapp.front.integration.accounts.client.dto.response.UserWithBankAccountsResponse;
+import org.example.bankapp.front.integration.accounts.dto.request.BankAccountCreateRequest;
+import org.example.bankapp.front.integration.accounts.dto.request.PasswordUpdateRequest;
+import org.example.bankapp.front.integration.accounts.dto.request.UserRegisterRequest;
+import org.example.bankapp.front.integration.accounts.dto.request.UserUpdateRequest;
+import org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse;
+import org.example.bankapp.front.integration.accounts.dto.response.UserWithBankAccountsResponse;
 import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -22,7 +21,7 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class AccountsService {
+public class AccountsGateway {
     private final AccountsServiceClient client;
 
     public void registerUser(UserRegisterRequest registerRequestDto) {

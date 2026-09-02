@@ -99,7 +99,7 @@
                     <div class="control">
                         <div th:unless="${#lists.isEmpty(bankAccounts)}" class="select">
                             <select>
-                                <!--/*@thymesVar id="account" type="org.example.bankapp.front.integration.accounts.client.dto.response.BankAccountResponse"*/-->
+                                <!--/*@thymesVar id="account" type="org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse"*/-->
                                 <option th:each="account : ${bankAccounts}"
                                         th:value="${account.currency}" th:text="${account.currency}">
                                     RUB
