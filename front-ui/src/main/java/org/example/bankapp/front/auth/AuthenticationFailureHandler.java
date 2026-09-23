@@ -3,7 +3,7 @@ package org.example.bankapp.front.auth;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
+import org.example.bankapp.front.common.exceptions.IntegrationException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -22,7 +22,7 @@ public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailure
                                         @NonNull HttpServletResponse response,
                                         @NonNull AuthenticationException exception) throws IOException, ServletException {
         String errorMessage = "Неверный логин или пароль";
-        if (exception.getCause() instanceof AccountsServiceException e) {
+        if (exception.getCause() instanceof IntegrationException e) {
             errorMessage = e.getMessage();
         }
 

@@ -2,10 +2,12 @@ package com.example.bankapp.accounts.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.client.OAuth2ClientHttpRequestInterceptor;
-import org.springframework.web.client.RestClient;
+import org.springframework.security.oauth2.client.web.client.support.OAuth2RestClientHttpServiceGroupConfigurer;
 
 @Configuration
 public class OAuth2ClientConfig {
@@ -26,14 +28,8 @@ public class OAuth2ClientConfig {
     }
 
     @Bean
-    public RestClient oauth2RestClient(OAuth2AuthorizedClientManager authorizedClientManager) {
-        var interceptor = new OAuth2ClientHttpRequestInterceptor(authorizedClientManager);
-
-        // Указываем ID регистрации из application.yaml
-        interceptor.setClientRegistrationIdResolver(request -> "oauth2-service-client");
-
-        return RestClient.builder()
-                .requestInterceptor(interceptor)
-                .build();
+    public OAuth2RestClientHttpServiceGroupConfigurer oauth2HttpServiceGroupConfigurer(
+            OAuth2AuthorizedClientManager authorizedClientManager) {
+        return OAuth2RestClientHttpServiceGroupConfigurer.from(authorizedClientManager);
     }
 }

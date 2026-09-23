@@ -26,7 +26,10 @@ spring:
         provider:
           keycloak:
             issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/${KC_REALM}
+
   http:
     serviceclient:
       accounts:
         base-url: http://localhost:8090
+      cash:
+        base-url: http://localhost:8091

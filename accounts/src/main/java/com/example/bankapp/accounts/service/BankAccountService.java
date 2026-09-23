@@ -1,18 +1,22 @@
 package com.example.bankapp.accounts.service;
 
-import com.example.bankapp.accounts.exception.InvalidBalanceException;
 import com.example.bankapp.accounts.exception.EntityAlreadyExistsException;
 import com.example.bankapp.accounts.exception.EntityNotFoundException;
+import com.example.bankapp.accounts.exception.InvalidAmountException;
+import com.example.bankapp.accounts.exception.NotEnoughBalanceException;
 import com.example.bankapp.accounts.mapper.BankAccountMapper;
 import com.example.bankapp.accounts.model.BankAccount;
+import com.example.bankapp.accounts.model.User;
 import com.example.bankapp.accounts.repository.BankAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -38,30 +42,56 @@ public class BankAccountService {
         return "%010d".formatted(nextNumber);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public BankAccount findById(Long id) {
         return findByIdOrThrow(id);
     }
 
     @Transactional(readOnly = true)
     public List<BankAccount> findAllByUserId(Long userId) {
-        return repository.findAllByUser(AggregateReference.to(userId));
-    }
+        AggregateReference<User, Long> user = AggregateReference.to(userId);
+        Sort sort = Sort.by(Sort.Direction.ASC, "accountNumber");
 
-    @Transactional
-    public BankAccount update(BankAccount entity) {
-        BankAccount target = findByIdOrThrow(entity.getId());
-        mapper.patchEntity(entity, target);
-        if (target.getBalance().signum() >= 0) {
-            throw new InvalidBalanceException("Баланс не может быть отрицательным");
-        }
-
-        return repository.save(target);
+        return repository.findAllByUser(user, sort);
     }
 
     @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    @Transactional
+    public BankAccount deposit(Long id, BigDecimal amount) {
+        if (amount == null || amount.signum() < 0) {
+            throw new InvalidAmountException("Сумма пополнения должна быть больше 0");
+        }
+
+        BankAccount account = findByIdOrThrow(id);
+        BigDecimal newBalance = account.getBalance()
+                .add(amount)
+                .setScale(2, RoundingMode.HALF_UP);
+        account.setBalance(newBalance);
+
+        return repository.save(account);
+    }
+
+    @Transactional
+    public BankAccount withdraw(Long id, BigDecimal amount) {
+        if (amount == null || amount.signum() < 0) {
+            throw new InvalidAmountException("Сумма снятия должна быть больше 0");
+        }
+
+        BankAccount account = findByIdOrThrow(id);
+        if (account.getBalance().compareTo(amount) < 0) {
+            throw new NotEnoughBalanceException("Не достаточно средств на балансе");
+        }
+
+        BigDecimal newBalance = account.getBalance()
+                .subtract(amount)
+                .setScale(2, RoundingMode.HALF_UP);
+        account.setBalance(newBalance);
+
+        return repository.save(account);
     }
 
     private @NonNull BankAccount findByIdOrThrow(Long id) {

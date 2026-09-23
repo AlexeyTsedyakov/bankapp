@@ -1,7 +1,8 @@
 package com.example.bankapp.accounts.controller;
 
 import com.example.bankapp.accounts.controller.dto.request.BankAccountCreateRequest;
-import com.example.bankapp.accounts.controller.dto.request.BankAccountUpdateRequest;
+import com.example.bankapp.accounts.controller.dto.request.BankAccountDepositRequest;
+import com.example.bankapp.accounts.controller.dto.request.BankAccountWithdrawRequest;
 import com.example.bankapp.accounts.controller.dto.response.BankAccountResponse;
 import com.example.bankapp.accounts.mapper.BankAccountMapper;
 import com.example.bankapp.accounts.model.BankAccount;
@@ -45,21 +46,28 @@ public class BankAccountController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<BankAccountResponse> updateBankAccount(@PathVariable Long id,
-                                                                 @RequestBody @Valid BankAccountUpdateRequest request) {
-        BankAccount entity = bankAccountMapper.toEntity(request);
-        entity.setId(id);
-        BankAccount updated = bankAccountService.update(entity);
-        BankAccountResponse response = bankAccountMapper.toBankAccountResponse(updated);
-
-        return ResponseEntity.ok(response);
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBankAccount(@PathVariable Long id) {
         bankAccountService.delete(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/deposit")
+    public ResponseEntity<BankAccountResponse> deposit(@PathVariable Long id,
+                                                       @RequestBody @Valid BankAccountDepositRequest request) {
+        BankAccount updated = bankAccountService.deposit(id, request.amount());
+        BankAccountResponse response = bankAccountMapper.toBankAccountResponse(updated);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/withdraw")
+    public ResponseEntity<BankAccountResponse> withdraw(@PathVariable Long id,
+                                                        @RequestBody @Valid BankAccountWithdrawRequest request) {
+        BankAccount updated = bankAccountService.withdraw(id, request.amount());
+        BankAccountResponse response = bankAccountMapper.toBankAccountResponse(updated);
+
+        return ResponseEntity.ok(response);
     }
 }

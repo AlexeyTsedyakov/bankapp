@@ -1,9 +1,6 @@
 package com.example.bankapp.accounts.controller;
 
-import com.example.bankapp.accounts.exception.InvalidBalanceException;
-import com.example.bankapp.accounts.exception.EntityAlreadyExistsException;
-import com.example.bankapp.accounts.exception.EntityNotFoundException;
-import com.example.bankapp.accounts.exception.UserHasBankAccountsException;
+import com.example.bankapp.accounts.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,7 +16,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EntityAlreadyExistsException.class)
-    public ProblemDetail handleAlreadyExists(EntityAlreadyExistsException e) {
+    public ProblemDetail handleEntityAlreadyExists(EntityAlreadyExistsException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
 
@@ -28,9 +25,14 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
 
-    @ExceptionHandler(InvalidBalanceException.class)
-    public ProblemDetail handleInvalidBalance(InvalidBalanceException e) {
+    @ExceptionHandler(InvalidAmountException.class)
+    public ProblemDetail handleInvalidAmount(InvalidAmountException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(NotEnoughBalanceException.class)
+    public ProblemDetail handleNotEnoughBalance(NotEnoughBalanceException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

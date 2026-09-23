@@ -1,8 +1,11 @@
 package com.example.bankapp.accounts.service;
 
 import com.example.bankapp.accounts.config.JdbcDialectTestConfiguration;
+import com.example.bankapp.accounts.config.OAuth2TestConfiguration;
 import com.example.bankapp.accounts.exception.EntityAlreadyExistsException;
 import com.example.bankapp.accounts.exception.EntityNotFoundException;
+import com.example.bankapp.accounts.exception.InvalidAmountException;
+import com.example.bankapp.accounts.exception.NotEnoughBalanceException;
 import com.example.bankapp.accounts.model.BankAccount;
 import com.example.bankapp.accounts.model.Currency;
 import com.example.bankapp.accounts.model.User;
@@ -17,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -24,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
-@Import(JdbcDialectTestConfiguration.class)
+@Import({JdbcDialectTestConfiguration.class, OAuth2TestConfiguration.class})
 @Transactional
 @ActiveProfiles("test")
 public class BankAccountServiceTest {
@@ -119,5 +123,65 @@ public class BankAccountServiceTest {
 
         assertThatThrownBy(() -> bankAccountService.findById(rubAccount.getId()))
                 .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    void deposit_positiveAmount_returnsBankAccount() {
+        BankAccount created = bankAccountService.create(rubBankAccount);
+        BigDecimal amount = new BigDecimal("33.33");
+        BigDecimal newBalance = created.getBalance()
+                .add(amount)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        BankAccount updated = bankAccountService.deposit(created.getId(), amount);
+
+        assertThat(updated).isNotNull();
+        assertThat(updated.getId()).isEqualTo(created.getId());
+        assertThat(updated.getBalance()).isEqualTo(newBalance);
+    }
+
+    @Test
+    void deposit_negativeAmount_throwsException() {
+        BankAccount created = bankAccountService.create(rubBankAccount);
+        BigDecimal amount = new BigDecimal("-33.33");
+
+        assertThatThrownBy(() -> bankAccountService.deposit(created.getId(), amount))
+                .isInstanceOf(InvalidAmountException.class);
+    }
+
+    @Test
+    void withdraw_amountLessThanBalance_returnsBankAccount() {
+        BankAccount created = bankAccountService.create(rubBankAccount);
+        created = bankAccountService.deposit(created.getId(), new BigDecimal("100.00"));
+        BigDecimal amount = new BigDecimal("10.33");
+        BigDecimal newBalance = created.getBalance()
+                .subtract(amount)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        assertThat(amount).isLessThan(created.getBalance());
+        BankAccount updated = bankAccountService.withdraw(created.getId(), amount);
+
+        assertThat(updated).isNotNull();
+        assertThat(updated.getId()).isEqualTo(created.getId());
+        assertThat(updated.getBalance()).isEqualTo(newBalance);
+    }
+
+    @Test
+    void withdraw_amountGreaterThanBalance_throwsException() {
+        BankAccount created = bankAccountService.create(rubBankAccount);
+        BigDecimal amount = new BigDecimal("99999.99");
+
+        assertThat(amount).isGreaterThan(created.getBalance());
+        assertThatThrownBy(() -> bankAccountService.withdraw(created.getId(), amount))
+                .isInstanceOf(NotEnoughBalanceException.class);
+    }
+
+    @Test
+    void withdraw_NegativeAmount_throwsException() {
+        BankAccount created = bankAccountService.create(rubBankAccount);
+        BigDecimal amount = new BigDecimal("-33.33");
+
+        assertThatThrownBy(() -> bankAccountService.withdraw(created.getId(), amount))
+                .isInstanceOf(InvalidAmountException.class);
     }
 }

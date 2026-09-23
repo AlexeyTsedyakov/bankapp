@@ -9,8 +9,8 @@ import org.example.bankapp.front.integration.accounts.dto.request.UserRegisterRe
 import org.example.bankapp.front.integration.accounts.dto.request.UserUpdateRequest;
 import org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse;
 import org.example.bankapp.front.integration.accounts.dto.response.UserResponse;
-import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
-import org.springframework.stereotype.Service;
+import org.example.bankapp.front.common.exceptions.IntegrationException;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
@@ -21,15 +21,15 @@ import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
-@Service
+@Component
 public class AccountsGateway {
     private final AccountsServiceClient client;
 
-    public void registerUser(UserRegisterRequest registerRequestDto) {
+    public void registerUser(UserRegisterRequest registerRequest) {
         try {
-            client.registerUser(registerRequestDto);
+            client.registerUser(registerRequest);
         } catch (HttpClientErrorException.Conflict e) {
-            throw new AccountsServiceException("Пользователь с таким логином уже существует");
+            throw new IntegrationException("Пользователь с таким логином уже существует");
         } catch (RuntimeException e) {
             handleHttpError(e);
             throw e;
@@ -67,7 +67,7 @@ public class AccountsGateway {
         try {
             client.deleteUser(id);
         } catch (HttpClientErrorException.Conflict e) {
-            throw new AccountsServiceException("Нельзя удалить аккаунт, пока есть активные счета");
+            throw new IntegrationException("Нельзя удалить аккаунт, пока есть активные счета");
         } catch (RuntimeException e) {
             handleHttpError(e);
             throw e;
@@ -89,7 +89,7 @@ public class AccountsGateway {
         try {
             client.createBankAccount(request);
         } catch (HttpClientErrorException.Conflict e) {
-            throw new AccountsServiceException("Счет в данной валюте уже существует");
+            throw new IntegrationException("Счет в данной валюте уже существует");
         } catch (RuntimeException e) {
             handleHttpError(e);
             throw e;
@@ -118,9 +118,9 @@ public class AccountsGateway {
         log.error("Error executing request to the `Account service`: {}", e.getMessage());
 
         if (e instanceof HttpStatusCodeException) {
-            throw new AccountsServiceException("Ошибка выполнения запроса к сервису аккаунтов");
+            throw new IntegrationException("Ошибка выполнения запроса к сервису аккаунтов");
         } else if (e instanceof ResourceAccessException) {
-            throw new AccountsServiceException("Служба аккаунтов не доступна");
+            throw new IntegrationException("Служба аккаунтов не доступна");
         }
     }
 }

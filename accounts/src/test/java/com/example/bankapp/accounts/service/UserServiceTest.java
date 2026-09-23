@@ -1,6 +1,7 @@
 package com.example.bankapp.accounts.service;
 
 import com.example.bankapp.accounts.config.JdbcDialectTestConfiguration;
+import com.example.bankapp.accounts.config.OAuth2TestConfiguration;
 import com.example.bankapp.accounts.exception.EntityAlreadyExistsException;
 import com.example.bankapp.accounts.exception.EntityNotFoundException;
 import com.example.bankapp.accounts.exception.UserHasBankAccountsException;
@@ -23,7 +24,7 @@ import java.time.temporal.ChronoUnit;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
-@Import(JdbcDialectTestConfiguration.class)
+@Import({JdbcDialectTestConfiguration.class, OAuth2TestConfiguration.class})
 @Transactional
 @ActiveProfiles("test")
 public class UserServiceTest {

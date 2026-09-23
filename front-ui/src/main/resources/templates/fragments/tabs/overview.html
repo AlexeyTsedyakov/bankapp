@@ -93,15 +93,22 @@
                 <p class="card-header-title">Внесение / снятие</p>
             </header>
 
-            <form class="card-content">
+            <!--/*@thymesVar id="cashRequest" type="org.example.bankapp.front.integration.cash.dto.CashDepositRequest"*/-->
+            <form class="card-content" th:object="${cashRequest}">
+                <div th:if="${cashServiceErrorMessage}" class="notification is-danger is-light is-fullwidth"
+                     x-data="{ show: true }" x-show="show" x-transition>
+                    <button class="delete" type="button" @click="show = false"></button>
+                    <span th:text="${cashServiceErrorMessage}">Ошибка операции</span>
+                </div>
+
                 <div class="field">
                     <label class="label">Счет</label>
                     <div class="control">
                         <div th:unless="${#lists.isEmpty(bankAccounts)}" class="select">
-                            <select>
+                            <select th:field="*{bankAccountId}">
                                 <!--/*@thymesVar id="account" type="org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse"*/-->
                                 <option th:each="account : ${bankAccounts}"
-                                        th:value="${account.currency}" th:text="${account.currency}">
+                                        th:value="${account.id}" th:text="${account.currency}">
                                     RUB
                                 </option>
                             </select>
@@ -110,23 +117,38 @@
                             <input class="input" type="text" value="У вас пока нет открытых счетов" disabled>
                         </div>
                     </div>
+                    <p class="help is-danger" th:if="${#fields?.hasErrors('bankAccountId')}"
+                       th:errors="*{bankAccountId}">
+                    </p>
                 </div>
 
                 <div class="field">
                     <label class="label">Сумма</label>
                     <div class="control">
-                        <input class="input" type="number" min="0.01" placeholder="0.00" required>
+                        <input class="input" th:errorclass="is-danger" type="number" th:field="*{amount}" step="0.01" min="0.01" placeholder="0.00" required
+                               th:disabled="${#lists.isEmpty(bankAccounts)}">
                     </div>
+                    <p class="help is-danger" th:if="${#fields?.hasErrors('amount')}"
+                       th:errors="*{amount}">
+                    </p>
                 </div>
 
                 <div class="field is-grouped is-grouped-multiline is-grouped-centered">
                     <div class="control">
-                        <button th:disabled="${#lists.isEmpty(bankAccounts)}" class="button is-success" type="submit">
+                        <button th:disabled="${#lists.isEmpty(bankAccounts)}"
+                                hx:post="@{/overview/cash/deposit}"
+                                hx-target="#overview-tab"
+                                hx-swap="outerHTML"
+                                class="button is-success" type="submit">
                             Положить
                         </button>
                     </div>
                     <div class="control">
-                        <button th:disabled="${#lists.isEmpty(bankAccounts)}" class="button is-warning">
+                        <button th:disabled="${#lists.isEmpty(bankAccounts)}"
+                                hx:post="@{/overview/cash/withdraw}"
+                                hx-target="#overview-tab"
+                                hx-swap="outerHTML"
+                                class="button is-warning" type="submit">
                             Снять
                         </button>
                     </div>

@@ -1,6 +1,7 @@
 package com.example.bankapp.accounts.controller;
 
 import com.example.bankapp.accounts.config.JdbcDialectTestConfiguration;
+import com.example.bankapp.accounts.config.OAuth2TestConfiguration;
 import com.example.bankapp.accounts.controller.dto.request.BankAccountCreateRequest;
 import com.example.bankapp.accounts.controller.dto.request.PasswordUpdateRequest;
 import com.example.bankapp.accounts.controller.dto.request.UserRegisterRequest;
@@ -30,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(JdbcDialectTestConfiguration.class)
+@Import({JdbcDialectTestConfiguration.class, OAuth2TestConfiguration.class})
 @Transactional
 @ActiveProfiles("test")
 public class UserControllerTest {

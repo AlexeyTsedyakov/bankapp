@@ -3,7 +3,7 @@ package org.example.bankapp.front.auth;
 import lombok.RequiredArgsConstructor;
 import org.example.bankapp.front.integration.accounts.AccountsServiceClient;
 import org.example.bankapp.front.integration.accounts.dto.response.UserCredentialsResponse;
-import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
+import org.example.bankapp.front.common.exceptions.IntegrationException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -28,9 +28,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         } catch (HttpClientErrorException.NotFound e) {
             throw new UsernameNotFoundException("В сервисе аккаунтов отсутствует пользователь, логин: " + username , e);
         } catch (ResourceAccessException e) {
-            throw new AccountsServiceException("Служба аккаунтов не доступна", e);
+            throw new IntegrationException("Служба аккаунтов не доступна", e);
         } catch (Exception e) {
-            throw new AccountsServiceException("Ошибка выполнения запроса к сервису аккаунтов", e);
+            throw new IntegrationException("Ошибка выполнения запроса к сервису аккаунтов", e);
         }
 
         return UserDetailsImpl.builder()

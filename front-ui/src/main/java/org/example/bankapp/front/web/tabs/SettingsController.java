@@ -10,7 +10,7 @@ import org.example.bankapp.front.auth.UserDetailsImpl;
 import org.example.bankapp.front.integration.accounts.dto.request.PasswordUpdateRequest;
 import org.example.bankapp.front.integration.accounts.dto.request.UserUpdateRequest;
 import org.example.bankapp.front.integration.accounts.dto.response.UserResponse;
-import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
+import org.example.bankapp.front.common.exceptions.IntegrationException;
 import org.example.bankapp.front.integration.accounts.AccountsGateway;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,7 +34,7 @@ public class SettingsController {
         try {
             UserResponse user = accountsGateway.getUser(userId);
             model.addAttribute("userUpdateRequest", createUserUpdateRequest(user));
-        } catch (AccountsServiceException e) {
+        } catch (IntegrationException e) {
             model.addAttribute("accountsServiceErrorMessage", e.getMessage());
             model.addAttribute("userUpdateRequest", new UserUpdateRequest());
         }
@@ -54,7 +54,7 @@ public class SettingsController {
 
         try {
             accountsGateway.updateUser(userDetails.getId(), userUpdateRequest);
-        } catch (AccountsServiceException e) {
+        } catch (IntegrationException e) {
             model.addAttribute("accountsRequestErrorMessage", e.getMessage());
             return "fragments/tabs/settings :: profile-card";
         }
@@ -90,7 +90,7 @@ public class SettingsController {
                              Authentication authentication) {
         try {
             accountsGateway.deleteUser(userDetails.getId());
-        } catch (AccountsServiceException e) {
+        } catch (IntegrationException e) {
             model.addAttribute("accountsRequestErrorMessage", e.getMessage());
             return "fragments/tabs/settings :: profile-error-notification";
         }

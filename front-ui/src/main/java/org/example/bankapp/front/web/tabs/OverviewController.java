@@ -1,15 +1,20 @@
 package org.example.bankapp.front.web.tabs;
 
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.bankapp.front.auth.UserDetailsImpl;
 import org.example.bankapp.front.common.model.Currency;
 import org.example.bankapp.front.integration.accounts.AccountsGateway;
 import org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse;
-import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
+import org.example.bankapp.front.common.exceptions.IntegrationException;
+import org.example.bankapp.front.integration.cash.CashGateway;
+import org.example.bankapp.front.integration.cash.dto.CashDepositRequest;
+import org.example.bankapp.front.integration.cash.dto.CashWithdrawRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,13 +25,14 @@ import java.util.Set;
 @RequestMapping("/overview")
 public class OverviewController {
     private final AccountsGateway accountsGateway;
+    private final CashGateway cashGateway;
 
     @HxRequest
     @GetMapping
     public String getOverviewTab(Model model, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         try {
             fillModel(model, userDetails.getId());
-        } catch (AccountsServiceException e) {
+        } catch (IntegrationException e) {
             model.addAttribute("accountsServiceErrorMessage", e.getMessage());
         }
 
@@ -41,7 +47,7 @@ public class OverviewController {
         try {
             accountsGateway.createBankAccount(userId, currency);
             fillModel(model, userId);
-        } catch (AccountsServiceException e) {
+        } catch (IntegrationException e) {
             model.addAttribute("accountsServiceErrorMessage", e.getMessage());
         }
 
@@ -55,7 +61,51 @@ public class OverviewController {
         try {
             accountsGateway.deleteBankAccount(id);
             fillModel(model, userDetails.getId());
-        } catch (AccountsServiceException e) {
+        } catch (IntegrationException e) {
+            model.addAttribute("accountsServiceErrorMessage", e.getMessage());
+        }
+
+        return "fragments/tabs/overview :: overview-tab";
+    }
+
+    @HxRequest
+    @PostMapping("/cash/deposit")
+    public String depositCash(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                              @Valid @ModelAttribute("cashRequest") CashDepositRequest depositRequest,
+                              BindingResult bindingResult, Model model) {
+        if (!bindingResult.hasErrors()) {
+            try {
+                cashGateway.deposit(depositRequest);
+            } catch (IntegrationException e) {
+                model.addAttribute("cashServiceErrorMessage", e.getMessage());
+            }
+        }
+
+        try {
+            fillModel(model, userDetails.getId());
+        } catch (IntegrationException e) {
+            model.addAttribute("accountsServiceErrorMessage", e.getMessage());
+        }
+
+        return "fragments/tabs/overview :: overview-tab";
+    }
+
+    @HxRequest
+    @PostMapping("/cash/withdraw")
+    public String withdrawCash(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                               @Valid @ModelAttribute("cashRequest") CashWithdrawRequest withdrawRequest,
+                               BindingResult bindingResult, Model model) {
+        if (!bindingResult.hasErrors()) {
+            try {
+                cashGateway.withdraw(withdrawRequest);
+            } catch (IntegrationException e) {
+                model.addAttribute("cashServiceErrorMessage", e.getMessage());
+            }
+        }
+
+        try {
+            fillModel(model, userDetails.getId());
+        } catch (IntegrationException e) {
             model.addAttribute("accountsServiceErrorMessage", e.getMessage());
         }
 
@@ -68,5 +118,8 @@ public class OverviewController {
 
         model.addAttribute("bankAccounts", userBankAccounts);
         model.addAttribute("availableCurrencies", availableCurrencies);
+        if (!model.containsAttribute("cashRequest")) {
+            model.addAttribute("cashRequest", new CashDepositRequest(null, null));
+        }
     }
 }

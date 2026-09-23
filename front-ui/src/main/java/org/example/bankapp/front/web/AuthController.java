@@ -3,7 +3,7 @@ package org.example.bankapp.front.web;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.bankapp.front.integration.accounts.dto.request.UserRegisterRequest;
-import org.example.bankapp.front.integration.accounts.exceptions.AccountsServiceException;
+import org.example.bankapp.front.common.exceptions.IntegrationException;
 import org.example.bankapp.front.integration.accounts.AccountsGateway;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,7 +38,7 @@ public class AuthController {
 
         try {
             accountsGateway.registerUser(userRegisterRequest);
-        } catch (AccountsServiceException e) {
+        } catch (IntegrationException e) {
             bindingResult.reject("error.user.registration", e.getMessage());
             return "registration";
         }

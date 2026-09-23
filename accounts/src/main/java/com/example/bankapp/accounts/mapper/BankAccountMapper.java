@@ -1,7 +1,6 @@
 package com.example.bankapp.accounts.mapper;
 
 import com.example.bankapp.accounts.controller.dto.request.BankAccountCreateRequest;
-import com.example.bankapp.accounts.controller.dto.request.BankAccountUpdateRequest;
 import com.example.bankapp.accounts.controller.dto.response.BankAccountResponse;
 import com.example.bankapp.accounts.model.BankAccount;
 import com.example.bankapp.accounts.model.User;
@@ -14,9 +13,6 @@ import java.util.List;
 public interface BankAccountMapper {
     @Mapping(target = "user", source = "userId")
     BankAccount toEntity(BankAccountCreateRequest createRequest);
-
-    @Mapping(target = "user", source = "userId")
-    BankAccount toEntity(BankAccountUpdateRequest updateRequest);
 
     @Mapping(target = "userId", source = "user.id")
     BankAccountResponse toBankAccountResponse(BankAccount entity);
