@@ -9,13 +9,14 @@ spring:
 
   mvc:
     servlet:
-      path: /cash
+      path: /api/cash
 
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/${KC_REALM}
+        server-id: cash
       client:
         registration:
           oauth2-service-client:
@@ -32,4 +33,4 @@ spring:
   http:
     serviceclient:
       accounts:
-        base-url: http://localhost:8090
+        base-url: http://localhost:8090/api/accounts

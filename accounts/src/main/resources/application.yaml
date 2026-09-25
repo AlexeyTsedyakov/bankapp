@@ -9,7 +9,7 @@ spring:
 
   mvc:
     servlet:
-      path: /accounts
+      path: /api/accounts
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?currentSchema=accounts
@@ -25,6 +25,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/${KC_REALM}
+        server-id: accounts
       client:
         registration:
           oauth2-service-client:

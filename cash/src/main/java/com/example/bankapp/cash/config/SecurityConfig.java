@@ -16,7 +16,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,24 +50,14 @@ public class SecurityConfig {
         return jwtConvertor;
     }
 
-    @SuppressWarnings("unchecked")
     @Bean
     public Converter<Jwt, Collection<GrantedAuthority>> keycloakRoleConverter(
-            @Value("${spring.security.oauth2.client.registration.oauth2-service-client.client-id}") String resourceId) {
+            @Value("${spring.security.oauth2.resourceserver.server-id}") String serverId) {
         return jwt -> {
-            Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
-            if (resourceAccess == null || !resourceAccess.containsKey(resourceId)) {
-                return Collections.emptyList();
-            }
-
-            Map<String, Object> serviceAccess = (Map<String, Object>) resourceAccess.get(resourceId);
-            if (serviceAccess == null) {
-                return Collections.emptyList();
-            }
-
-            List<String> roles = (List<String>) serviceAccess.get("roles");
-            if (roles == null) {
-                return Collections.emptyList();
+            if (!(jwt.getClaim("resource_access") instanceof Map<?, ?> resourceAccess)
+                    || !(resourceAccess.get(serverId) instanceof Map<?, ?> clientAccess)
+                    || !(clientAccess.get("roles") instanceof Collection<?> roles)) {
+                return List.of();
             }
 
             return roles.stream()

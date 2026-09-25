@@ -30,6 +30,8 @@ spring:
   http:
     serviceclient:
       accounts:
-        base-url: http://localhost:8090
+        base-url: http://localhost:8090/api/accounts
       cash:
-        base-url: http://localhost:8091
+        base-url: http://localhost:8091/api/cash
+      exchange:
+        base-url: http://localhost:8092/api/exchange

@@ -21,7 +21,11 @@
             </header>
 
             <div class="card-content">
-                <table class="table is-striped is-fullwidth">
+                <div th:if="${exchangeServiceErrorMessage}" class="notification is-danger is-light is-fullwidth">
+                    <span th:text="${exchangeServiceErrorMessage}">Ошибка загрузки курсов валют</span>
+                </div>
+
+                <table th:unless="${exchangeServiceErrorMessage}" class="table is-striped is-fullwidth">
                     <thead>
                     <tr>
                         <th scope="col">Валюта</th>
@@ -31,20 +35,13 @@
                     </thead>
 
                     <tbody>
-                    <tr>
-                        <td><b>USD</b></td>
-                        <td class="has-text-success">91.20</td>
-                        <td class="has-text-danger">92.05</td>
+                    <tr th:each="rate : ${rates}">
+                        <td><b th:text="${rate.currency}">USD</b></td>
+                        <td class="has-text-success" th:text="${rate.buyRate}">91.20</td>
+                        <td class="has-text-danger" th:text="${rate.sellRate}">92.05</td>
                     </tr>
-                    <tr>
-                        <td><b>EUR</b></td>
-                        <td class="has-text-success">98.40</td>
-                        <td class="has-text-danger">99.60</td>
-                    </tr>
-                    <tr>
-                        <td><b>CNY</b></td>
-                        <td class="has-text-success">12.55</td>
-                        <td class="has-text-danger">12.78</td>
+                    <tr th:if="${#lists.isEmpty(rates)}">
+                        <td colspan="3" class="has-text-centered has-text-grey">Нет доступных курсов валют</td>
                     </tr>
                     </tbody>
                 </table>

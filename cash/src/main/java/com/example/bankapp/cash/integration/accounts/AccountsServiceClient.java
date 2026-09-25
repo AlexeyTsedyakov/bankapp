@@ -11,7 +11,7 @@ import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
 @SuppressWarnings("UnusedReturnValue")
-@HttpExchange("/accounts")
+@HttpExchange
 @ClientRegistrationId("oauth2-service-client")
 public interface AccountsServiceClient {
 

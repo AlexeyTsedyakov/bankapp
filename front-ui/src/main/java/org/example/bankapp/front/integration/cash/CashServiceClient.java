@@ -9,7 +9,7 @@ import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
 @SuppressWarnings("UnusedReturnValue")
-@HttpExchange("/cash")
+@HttpExchange
 @ClientRegistrationId("oauth2-service-client")
 public interface CashServiceClient {
 

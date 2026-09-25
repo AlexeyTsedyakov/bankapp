@@ -1,0 +1,19 @@
+server:
+  port: 8092
+
+spring:
+  application:
+    name: exchange
+  config:
+    import: optional:file:./.env[.properties]
+
+  mvc:
+    servlet:
+      path: /api/exchange
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/${KC_REALM}
+        server-id: exchange
