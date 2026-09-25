@@ -30,7 +30,7 @@ public class ExchangeController {
     }
 
     @PutMapping
-    public ResponseEntity<Void> setExchangeRates(@RequestBody @Valid List<ExchangeRate> rates) {
+    public ResponseEntity<Void> setExchangeRates(@RequestBody List<@Valid ExchangeRate> rates) {
         exchangeService.setRates(rates);
 
         return ResponseEntity.noContent().build();

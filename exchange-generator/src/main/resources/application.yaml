@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: exchange-generator
+  config:
+    import: optional:file:./.env[.properties]
+
+  security:
+    oauth2:
+      client:
+        registration:
+          oauth2-service-client:
+            provider: keycloak
+            client-id: exchange-generator
+            client-secret: ${KC_CLIENT_SECRET_EXCHANGE_GENERATOR}
+            authorization-grant-type: client_credentials
+            scope:
+              - openid
+        provider:
+          keycloak:
+            issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/${KC_REALM}
+
+  http:
+    serviceclient:
+      exchange:
+        base-url: http://localhost:8092/api/exchange

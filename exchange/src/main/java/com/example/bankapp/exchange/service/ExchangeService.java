@@ -16,7 +16,9 @@ public class ExchangeService {
     private final RateRepository repository;
 
     public List<ExchangeRate> getRates() {
-        return repository.findAll();
+        return repository.findAll().stream()
+                .filter(rate -> rate.getCurrency() != Currency.RUB)
+                .toList();
     }
 
     public ExchangeRate getRate(Currency currency) {
