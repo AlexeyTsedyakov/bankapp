@@ -10,6 +10,7 @@ import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BankAccountRepository extends ListCrudRepository<BankAccount, Long> {
@@ -19,4 +20,6 @@ public interface BankAccountRepository extends ListCrudRepository<BankAccount, L
     Long getNextAccountNumber();
 
     boolean existsByUserAndCurrency(AggregateReference<User, Long> user, Currency currency);
+
+    Optional<BankAccount> findByAccountNumber(String accountNumber);
 }

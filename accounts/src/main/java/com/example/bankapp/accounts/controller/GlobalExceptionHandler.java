@@ -35,6 +35,11 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, e.getMessage());
     }
 
+    @ExceptionHandler(IdempotencyKeyException.class)
+    public ProblemDetail handleIdempotencyKeyException(IdempotencyKeyException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidationExceptions(MethodArgumentNotValidException e) {
         var errors = e.getBindingResult().getFieldErrors().stream()

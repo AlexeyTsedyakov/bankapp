@@ -1,5 +1,6 @@
 package com.example.bankapp.cash.service;
 
+import com.example.bankapp.cash.exceptions.IdempotencyKeyException;
 import com.example.bankapp.cash.exceptions.InvalidAmountException;
 import com.example.bankapp.cash.integration.accounts.AccountsGateway;
 import com.example.bankapp.cash.integration.accounts.dto.response.BankAccountResponse;
@@ -12,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -44,49 +46,76 @@ public class CashServiceTest {
     void deposit_PositiveAmount_callsGateway() {
         long accountId = bankAccount.id();
         BigDecimal amount = new BigDecimal("33.33");
-        when(gateway.deposit(accountId, amount))
+        UUID idempotencyKey = UUID.randomUUID();
+        when(gateway.deposit(accountId, amount, idempotencyKey))
                 .thenReturn(bankAccount);
 
-        BankAccountResponse response = service.deposit(accountId, amount);
+        BankAccountResponse response = service.deposit(accountId, amount, idempotencyKey);
 
         assertThat(response).isEqualTo(bankAccount);
         verify(gateway, times(1))
-                .deposit(accountId, amount);
+                .deposit(accountId, amount, idempotencyKey);
     }
 
     @Test
     void deposit_NegativeAmount_throwsException() {
         long accountId = bankAccount.id();
         BigDecimal amount = new BigDecimal("-33.33");
+        UUID idempotencyKey = UUID.randomUUID();
 
-        assertThatThrownBy(() -> service.deposit(accountId, amount))
+        assertThatThrownBy(() -> service.deposit(accountId, amount, idempotencyKey))
                 .isInstanceOf(InvalidAmountException.class);
         verify(gateway, never())
-                .deposit(anyLong(), any(BigDecimal.class));
+                .deposit(anyLong(), any(BigDecimal.class), eq(idempotencyKey));
+    }
+
+    @Test
+    void deposit_NullIdempotencyKey_throwsException() {
+        long accountId = bankAccount.id();
+        BigDecimal amount = new BigDecimal("33.33");
+
+        assertThatThrownBy(() -> service.deposit(accountId, amount, null))
+                .isInstanceOf(IdempotencyKeyException.class);
+        verify(gateway, never())
+                .deposit(anyLong(), any(BigDecimal.class), any());
     }
 
     @Test
     void withdraw_PositiveAmount_callsGateway() {
         long accountId = bankAccount.id();
         BigDecimal amount = new BigDecimal("10.33");
-        when(gateway.withdraw(accountId, amount))
+        UUID idempotencyKey = UUID.randomUUID();
+
+        when(gateway.withdraw(accountId, amount, idempotencyKey))
                 .thenReturn(bankAccount);
 
-        BankAccountResponse response = service.withdraw(accountId, amount);
+        BankAccountResponse response = service.withdraw(accountId, amount, idempotencyKey);
 
         assertThat(response).isEqualTo(bankAccount);
         verify(gateway, times(1))
-                .withdraw(accountId, amount);
+                .withdraw(accountId, amount, idempotencyKey);
     }
 
     @Test
     void withdraw_NegativeAmount_throwsException() {
         long accountId = bankAccount.id();
         BigDecimal amount = new BigDecimal("-33.33");
+        UUID idempotencyKey = UUID.randomUUID();
 
-        assertThatThrownBy(() -> service.withdraw(accountId, amount))
+        assertThatThrownBy(() -> service.withdraw(accountId, amount, idempotencyKey))
                 .isInstanceOf(InvalidAmountException.class);
         verify(gateway, never())
-                .withdraw(anyLong(), any(BigDecimal.class));
+                .withdraw(anyLong(), any(BigDecimal.class), eq(idempotencyKey));
+    }
+
+    @Test
+    void withdraw_NullIdempotencyKey_throwsException() {
+        long accountId = bankAccount.id();
+        BigDecimal amount = new BigDecimal("10.33");
+
+        assertThatThrownBy(() -> service.withdraw(accountId, amount, null))
+                .isInstanceOf(IdempotencyKeyException.class);
+        verify(gateway, never())
+                .withdraw(anyLong(), any(BigDecimal.class), any());
     }
 }

@@ -29,9 +29,9 @@ public class ExchangeGateway {
         log.error("Error executing request to the `Exchange service`: {}", e.getMessage());
 
         if (e instanceof HttpStatusCodeException) {
-            throw new IntegrationException("Ошибка выполнения запроса к сервису обмена валюты");
+            throw new IntegrationException("Ошибка выполнения запроса к сервису конвертации валют");
         } else if (e instanceof ResourceAccessException) {
-            throw new IntegrationException("Служба обмена валюты не доступна");
+            throw new IntegrationException("Служба конвертации валют не доступна");
         }
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -38,7 +39,15 @@ public class BankAccountController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
+    @GetMapping(params = "number")
+    public ResponseEntity<BankAccountResponse> getBankAccountByNumber(@RequestParam String number) {
+        BankAccount found = bankAccountService.findByNumber(number);
+        BankAccountResponse response = bankAccountMapper.toBankAccountResponse(found);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(params = "userId")
     public ResponseEntity<List<BankAccountResponse>> getUserBankAccounts(@RequestParam Long userId) {
         List<BankAccount> found = bankAccountService.findAllByUserId(userId);
         List<BankAccountResponse> response = bankAccountMapper.toBankAccountResponseList(found);
@@ -55,8 +64,9 @@ public class BankAccountController {
 
     @PostMapping("/{id}/deposit")
     public ResponseEntity<BankAccountResponse> deposit(@PathVariable Long id,
-                                                       @RequestBody @Valid BankAccountDepositRequest request) {
-        BankAccount updated = bankAccountService.deposit(id, request.amount());
+                                                       @RequestBody @Valid BankAccountDepositRequest request,
+                                                       @RequestHeader(name = "Idempotency-Key") UUID idempotencyKey) {
+        BankAccount updated = bankAccountService.deposit(id, request.amount(), idempotencyKey);
         BankAccountResponse response = bankAccountMapper.toBankAccountResponse(updated);
 
         return ResponseEntity.ok(response);
@@ -64,8 +74,9 @@ public class BankAccountController {
 
     @PostMapping("/{id}/withdraw")
     public ResponseEntity<BankAccountResponse> withdraw(@PathVariable Long id,
-                                                        @RequestBody @Valid BankAccountWithdrawRequest request) {
-        BankAccount updated = bankAccountService.withdraw(id, request.amount());
+                                                        @RequestBody @Valid BankAccountWithdrawRequest request,
+                                                        @RequestHeader(name = "Idempotency-Key") UUID idempotencyKey) {
+        BankAccount updated = bankAccountService.withdraw(id, request.amount(), idempotencyKey);
         BankAccountResponse response = bankAccountMapper.toBankAccountResponse(updated);
 
         return ResponseEntity.ok(response);

@@ -10,24 +10,26 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class CashGateway {
     private final CashServiceClient client;
 
-    public void deposit(CashDepositRequest depositRequest) {
+    public void deposit(CashDepositRequest depositRequest, UUID idempotencyKey) {
         try {
-            client.deposit(depositRequest);
+            client.deposit(depositRequest, idempotencyKey);
         } catch (RuntimeException e) {
             handleHttpError(e);
             throw e;
         }
     }
 
-    public void withdraw(CashWithdrawRequest withdrawRequest) {
+    public void withdraw(CashWithdrawRequest withdrawRequest,UUID idempotencyKey) {
         try {
-            client.withdraw(withdrawRequest);
+            client.withdraw(withdrawRequest, idempotencyKey);
         } catch (HttpClientErrorException.UnprocessableContent e) {
             throw new IntegrationException("Не достаточно средств на балансе!");
         } catch (RuntimeException e) {

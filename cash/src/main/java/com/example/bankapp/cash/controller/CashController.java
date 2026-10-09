@@ -9,7 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -17,17 +20,19 @@ public class CashController {
     private final CashService cashService;
 
     @PostMapping("/deposit")
-    public ResponseEntity<BankAccountResponse> deposit(@RequestBody @Valid CashDepositRequest request) {
+    public ResponseEntity<BankAccountResponse> deposit(@RequestBody @Valid CashDepositRequest request,
+                                                       @RequestHeader(name = "Idempotency-Key") UUID idempotencyKey) {
         BankAccountResponse response =
-                cashService.deposit(request.bankAccountId(), request.amount());
+                cashService.deposit(request.bankAccountId(), request.amount(), idempotencyKey);
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<BankAccountResponse> withdraw(@RequestBody @Valid CashWithdrawRequest request) {
+    public ResponseEntity<BankAccountResponse> withdraw(@RequestBody @Valid CashWithdrawRequest request,
+                                                        @RequestHeader(name = "Idempotency-Key") UUID idempotencyKey) {
         BankAccountResponse response =
-                cashService.withdraw(request.bankAccountId(), request.amount());
+                cashService.withdraw(request.bankAccountId(), request.amount(), idempotencyKey);
 
         return ResponseEntity.ok(response);
     }

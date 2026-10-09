@@ -15,6 +15,11 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
+    @ExceptionHandler(IdempotencyKeyException.class)
+    public ProblemDetail handleIdempotencyKeyException(IdempotencyKeyException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
     @ExceptionHandler(ServiceClientErrorException.class)
     public ProblemDetail handleServiceClientError(ServiceClientErrorException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());

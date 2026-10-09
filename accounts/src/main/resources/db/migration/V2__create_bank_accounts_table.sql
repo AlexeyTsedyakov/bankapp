@@ -5,6 +5,8 @@ CREATE TABLE bank_accounts
     account_number VARCHAR(10)                             NOT NULL,
     currency       VARCHAR(3)                              NOT NULL,
     balance        DECIMAL(19, 2) DEFAULT 0.00,
+    created_at     TIMESTAMP WITHOUT TIME ZONE             NOT NULL,
+    updated_at     TIMESTAMP WITHOUT TIME ZONE             NOT NULL,
     CONSTRAINT pk_bank_accounts PRIMARY KEY (id),
     CONSTRAINT uq_bank_accounts_account_number UNIQUE (account_number),
     CONSTRAINT chk_bank_accounts_balance_non_negative CHECK (balance >= 0),

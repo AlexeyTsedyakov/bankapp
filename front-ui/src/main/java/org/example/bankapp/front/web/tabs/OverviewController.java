@@ -4,10 +4,10 @@ import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.bankapp.front.auth.UserDetailsImpl;
+import org.example.bankapp.front.common.exceptions.IntegrationException;
 import org.example.bankapp.front.common.model.Currency;
 import org.example.bankapp.front.integration.accounts.AccountsGateway;
 import org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse;
-import org.example.bankapp.front.common.exceptions.IntegrationException;
 import org.example.bankapp.front.integration.cash.CashGateway;
 import org.example.bankapp.front.integration.cash.dto.CashDepositRequest;
 import org.example.bankapp.front.integration.cash.dto.CashWithdrawRequest;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Controller
@@ -75,7 +76,8 @@ public class OverviewController {
                               BindingResult bindingResult, Model model) {
         if (!bindingResult.hasErrors()) {
             try {
-                cashGateway.deposit(depositRequest);
+                UUID idempotencyKey = UUID.randomUUID();
+                cashGateway.deposit(depositRequest, idempotencyKey);
             } catch (IntegrationException e) {
                 model.addAttribute("cashServiceErrorMessage", e.getMessage());
             }
@@ -97,7 +99,8 @@ public class OverviewController {
                                BindingResult bindingResult, Model model) {
         if (!bindingResult.hasErrors()) {
             try {
-                cashGateway.withdraw(withdrawRequest);
+                UUID idempotencyKey = UUID.randomUUID();
+                cashGateway.withdraw(withdrawRequest, idempotencyKey);
             } catch (IntegrationException e) {
                 model.addAttribute("cashServiceErrorMessage", e.getMessage());
             }

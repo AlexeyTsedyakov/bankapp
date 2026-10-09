@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:hx="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,50 +13,100 @@
 <body>
 
 <!-- Вкладка: Переводы -->
-<div th:fragment="transfers-tab" class="section grid" >
+<div th:fragment="transfers-tab" id="transfers-tab" class="section grid">
     <div class="cell is-col-span-2">
-        <section class="card" aria-labelledby="internal-transfer-heading">
+        <section th:fragment="internal-transfer" id="internal-transfer" class="card" aria-labelledby="internal-transfer-heading">
             <header class="card-header">
                 <h2 id="internal-transfer-heading" class="card-header-title">Между своими счетами</h2>
             </header>
 
-            <form class="card-content">
-                <div class="field is-grouped">
-                    <div class="field">
+            <!--/*@thymesVar id="internalTransferDto" type="org.example.bankapp.front.web.tabs.dto.InternalTransferDto"*/-->
+            <form class="card-content"
+                  hx:post="@{/transfers/internal}"
+                  hx-target="#internal-transfer"
+                  hx-swap="outerHTML"
+                  th:object="${internalTransferDto}">
+
+                <div th:if="${accountsServiceErrorMessage}" class="notification is-danger is-light is-fullwidth">
+                    <span th:text="${accountsServiceErrorMessage}">Ошибка загрузки счетов</span>
+                </div>
+
+                <div th:if="${internalTransferErrorMessage}" class="notification is-danger is-light is-fullwidth"
+                     x-data="{ show: true }" x-show="show" x-transition>
+                    <button class="delete" type="button" @click="show = false"></button>
+                    <span th:text="${internalTransferErrorMessage}">Ошибка операции</span>
+                </div>
+
+                <div th:if="${internalTransferSuccessMessage}" class="notification is-success is-light is-fullwidth"
+                     x-data="{ show: true }" x-show="show" x-transition>
+                    <button class="delete" type="button" @click="show = false"></button>
+                    <span th:text="${internalTransferSuccessMessage}">Операция обрабатывается</span>
+                </div>
+
+                <div class="field">
+                    <div class="field" >
                         <label class="label">Со счета</label>
                         <div class="control">
-                            <div class="select">
-                                <select>
-                                    <option>RUB</option>
-                                    <option>USD</option>
+                            <div th:unless="${#lists.isEmpty(bankAccounts)}" class="select"
+                                 th:classappend="${#fields.hasErrors('fromAccountId')} ? 'is-danger'">
+                                <select th:field="*{fromAccountId}">
+                                    <!--/*@thymesVar id="account" type="org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse"*/-->
+                                    <option th:each="account : ${bankAccounts}"
+                                            th:value="${account.id}" th:text="${account.currency}">
+                                        RUB
+                                    </option>
                                 </select>
                             </div>
+                            <div th:if="${#lists.isEmpty(bankAccounts)}" class="control">
+                                <input class="input" type="text" value="У вас пока нет открытых счетов" disabled>
+                            </div>
                         </div>
+                        <p class="help is-danger" th:if="${#fields?.hasErrors('fromAccountId')}"
+                           th:errors="*{fromAccountId}">
+                        </p>
                     </div>
 
                     <div class="field">
                         <label class="label">На счет</label>
                         <div class="control">
-                            <div class="select">
-                                <select>
-                                    <option>RUB</option>
-                                    <option>USD</option>
+                            <div th:unless="${#lists.isEmpty(bankAccounts)}" class="select"
+                                 th:classappend="${#fields.hasErrors('toAccountId')} ? 'is-danger'">
+                                <select th:field="*{toAccountId}" th:errorclass="is-danger">
+                                    <!--/*@thymesVar id="account" type="org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse"*/-->
+                                    <option th:each="account : ${bankAccounts}"
+                                            th:value="${account.id}" th:text="${account.currency}">
+                                        RUB
+                                    </option>
                                 </select>
                             </div>
+                            <div th:if="${#lists.isEmpty(bankAccounts)}" class="control">
+                                <input class="input" type="text" value="У вас пока нет открытых счетов" disabled>
+                            </div>
                         </div>
+                        <p class="help is-danger" th:if="${#fields?.hasErrors('toAccountId')}"
+                           th:errors="*{toAccountId}">
+                        </p>
                     </div>
                 </div>
 
                 <div class="field">
                     <label class="label">Сумма перевода</label>
                     <div class="control">
-                        <input class="input" type="number" step="0.01" min="0" placeholder="0.00">
+                        <input class="input" th:errorclass="is-danger" type="number" th:field="*{amount}"
+                               step="0.01" min="0.01" placeholder="0.00" required
+                               th:disabled="${#lists.isEmpty(bankAccounts)}">
                     </div>
+                    <p class="help is-danger" th:if="${#fields?.hasErrors('amount')}"
+                       th:errors="*{amount}">
+                    </p>
                 </div>
 
                 <div class="field is-grouped is-grouped-centered">
                     <div class="control">
-                        <button class="button is-success" type="submit">Перевести</button>
+                        <button class="button is-success" type="submit"
+                                th:disabled="${#lists.isEmpty(bankAccounts)}">
+                            Перевести
+                        </button>
                     </div>
                 </div>
             </form>
@@ -64,41 +114,85 @@
     </div>
 
     <div class="cell is-col-span-2">
-        <section class="card" aria-labelledby="external-transfer-heading">
+        <section th:fragment="external-transfer" id="external-transfer" class="card" aria-labelledby="external-transfer-heading">
             <header class="card-header">
                 <h2 id="external-transfer-heading" class="card-header-title">На счёт другого аккаунта</h2>
             </header>
 
-            <form class="card-content">
+            <!--/*@thymesVar id="externalTransferDto" type="org.example.bankapp.front.web.tabs.dto.ExternalTransferDto"*/-->
+            <form class="card-content"
+                  hx:post="@{/transfers/external}"
+                  hx-target="#external-transfer"
+                  hx-swap="outerHTML"
+                  th:object="${externalTransferDto}">
+
+                <div th:if="${accountsServiceErrorMessage}" class="notification is-danger is-light is-fullwidth">
+                    <span th:text="${accountsServiceErrorMessage}">Ошибка загрузки счетов</span>
+                </div>
+
+                <div th:if="${externalTransferErrorMessage}" class="notification is-danger is-light is-fullwidth"
+                     x-data="{ show: true }" x-show="show" x-transition>
+                    <button class="delete" type="button" @click="show = false"></button>
+                    <span th:text="${externalTransferErrorMessage}">Ошибка операции</span>
+                </div>
+
+                <div th:if="${externalTransferSuccessMessage}" class="notification is-success is-light is-fullwidth"
+                     x-data="{ show: true }" x-show="show" x-transition>
+                    <button class="delete" type="button" @click="show = false"></button>
+                    <span th:text="${externalTransferSuccessMessage}">Операция обрабатывается</span>
+                </div>
+
                 <div class="field">
                     <label class="label">Со своего счета</label>
                     <div class="control">
-                        <div class="select">
-                            <select>
-                                <option>RUB</option>
-                                <option>USD</option>
+                        <div th:unless="${#lists.isEmpty(bankAccounts)}" class="select">
+                            <select th:field="*{fromAccountId}">
+                                <!--/*@thymesVar id="account" type="org.example.bankapp.front.integration.accounts.dto.response.BankAccountResponse"*/-->
+                                <option th:each="account : ${bankAccounts}"
+                                        th:value="${account.id}" th:text="${account.currency}">
+                                    RUB
+                                </option>
                             </select>
                         </div>
+                        <div th:if="${#lists.isEmpty(bankAccounts)}" class="control">
+                            <input class="input" type="text" value="У вас пока нет открытых счетов" disabled>
+                        </div>
                     </div>
+                    <p class="help is-danger" th:if="${#fields?.hasErrors('fromAccountId')}"
+                       th:errors="*{fromAccountId}">
+                    </p>
                 </div>
 
                 <div class="field">
                     <label class="label">Счет получателя</label>
                     <div class="control">
-                        <input class="input" type="text" placeholder="Счет получателя">
+                        <input class="input" th:errorclass="is-danger" type="text" th:field="*{toAccountNumber}"
+                               placeholder="Счет получателя" required
+                               th:disabled="${#lists.isEmpty(bankAccounts)}">
                     </div>
+                    <p class="help is-danger" th:if="${#fields?.hasErrors('toAccountNumber')}"
+                       th:errors="*{toAccountNumber}">
+                    </p>
                 </div>
 
                 <div class="field">
                     <label class="label">Сумма перевода</label>
                     <div class="control">
-                        <input class="input" type="number" step="0.01" min="0" placeholder="0.00">
+                        <input class="input" th:errorclass="is-danger" type="number" th:field="*{amount}"
+                               step="0.01" min="0.01" placeholder="0.00" required
+                               th:disabled="${#lists.isEmpty(bankAccounts)}">
                     </div>
+                    <p class="help is-danger" th:if="${#fields?.hasErrors('amount')}"
+                       th:errors="*{amount}">
+                    </p>
                 </div>
 
                 <div class="field is-grouped is-grouped-centered">
                     <div class="control">
-                        <button class="button is-success" type="submit">Отправить</button>
+                        <button class="button is-success" type="submit"
+                                th:disabled="${#lists.isEmpty(bankAccounts)}">
+                            Отправить
+                        </button>
                     </div>
                 </div>
             </form>

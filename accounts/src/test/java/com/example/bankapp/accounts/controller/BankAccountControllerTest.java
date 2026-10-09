@@ -26,6 +26,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.BIG_DECIMAL;
@@ -94,12 +95,44 @@ public class BankAccountControllerTest {
 
     @Test
     @WithMockUser(roles = "accounts-access")
+    void getBankAccountByNumber_withExistingAccount_returns200() throws UnsupportedEncodingException {
+        BankAccountResponse accountDto = createBankAccount();
+        var request = mockMvc.get()
+                .uri("/bank-accounts?number={number}", accountDto.accountNumber());
+
+        assertThat(request)
+                .hasStatusOk()
+                .bodyJson()
+                .hasPathSatisfying("$.id", id ->
+                        assertThat(id).convertTo(Long.class).isEqualTo(accountDto.id()))
+                .hasPathSatisfying("$.accountNumber", accountNumber ->
+                        assertThat(accountNumber).isEqualTo(accountDto.accountNumber()))
+                .hasPathSatisfying("$.userId", userId ->
+                        assertThat(userId).convertTo(Long.class).isEqualTo(accountDto.userId()))
+                .hasPathSatisfying("$.currency", currency ->
+                        assertThat(currency).isEqualTo(accountDto.currency().name()))
+                .hasPathSatisfying("$.balance", balance ->
+                        assertThat(balance).convertTo(BIG_DECIMAL).isEqualByComparingTo(accountDto.balance()));
+    }
+
+    @Test
+    @WithMockUser(roles = "accounts-access")
+    void getBankAccountByNumber_withNonExistingNumber_returns404() {
+        var request = mockMvc.get()
+                .uri("/bank-accounts?number={number}", "non_existing_number");
+
+        assertThat(request).hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @WithMockUser(roles = "accounts-access")
     void deposit_withExistingAccountAndValidAmount_returns200() throws UnsupportedEncodingException {
         BankAccountResponse accountDto = createBankAccount();
         var debitRequest = new BankAccountDepositRequest(new BigDecimal("100.50"));
 
         var request = mockMvc.post()
                 .uri("/bank-accounts/{id}/deposit", accountDto.id())
+                .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(debitRequest));
 
@@ -119,6 +152,7 @@ public class BankAccountControllerTest {
 
         var request = mockMvc.post()
                 .uri("/bank-accounts/{id}/deposit", 999999L)
+                .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(debitRequest));
 
@@ -133,6 +167,7 @@ public class BankAccountControllerTest {
 
         var request = mockMvc.post()
                 .uri("/bank-accounts/{id}/deposit", accountDto.id())
+                .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(debitRequest));
 
@@ -147,6 +182,7 @@ public class BankAccountControllerTest {
 
         var request = mockMvc.post()
                 .uri("/bank-accounts/{id}/deposit", accountDto.id())
+                .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(debitRequest));
 
@@ -160,6 +196,7 @@ public class BankAccountControllerTest {
         var debitRequest = new BankAccountDepositRequest(new BigDecimal("100.00"));
         mockMvc.post()
                 .uri("/bank-accounts/{id}/deposit", accountDto.id())
+                .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(debitRequest))
                 .exchange();
@@ -167,6 +204,7 @@ public class BankAccountControllerTest {
         var withdrawRequest = new BankAccountWithdrawRequest(new BigDecimal("40.00"));
         var request = mockMvc.post()
                 .uri("/bank-accounts/{id}/withdraw", accountDto.id())
+                .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawRequest));
 
@@ -187,6 +225,7 @@ public class BankAccountControllerTest {
 
         var request = mockMvc.post()
                 .uri("/bank-accounts/{id}/withdraw", accountDto.id())
+                .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawRequest));
 
@@ -200,6 +239,7 @@ public class BankAccountControllerTest {
 
         var request = mockMvc.post()
                 .uri("/bank-accounts/{id}/withdraw", 999999L)
+                .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawRequest));
 
@@ -214,6 +254,7 @@ public class BankAccountControllerTest {
 
         var request = mockMvc.post()
                 .uri("/bank-accounts/{id}/withdraw", accountDto.id())
+                .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawRequest));
 
@@ -228,6 +269,7 @@ public class BankAccountControllerTest {
 
         var request = mockMvc.post()
                 .uri("/bank-accounts/{id}/withdraw", accountDto.id())
+                .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawRequest));
 

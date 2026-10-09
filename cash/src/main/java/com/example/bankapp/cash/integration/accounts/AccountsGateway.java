@@ -16,6 +16,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,29 +24,20 @@ import java.math.BigDecimal;
 public class AccountsGateway {
     private final AccountsServiceClient client;
 
-    public BankAccountResponse getBankAccount(Long accountId) {
-        try {
-            return client.getBankAccount(accountId);
-        } catch (RuntimeException e) {
-            handleHttpError(e);
-            throw e;
-        }
-    }
-
-    public BankAccountResponse deposit(Long accountId, BigDecimal amount) {
+    public BankAccountResponse deposit(Long accountId, BigDecimal amount, UUID idempotencyKey) {
         var request = new BankAccountDepositRequest(amount);
         try {
-            return client.deposit(accountId, request);
+            return client.deposit(accountId, request, idempotencyKey);
         } catch (RuntimeException e) {
             handleHttpError(e);
             throw e;
         }
     }
 
-    public BankAccountResponse withdraw(Long accountId, BigDecimal amount) {
+    public BankAccountResponse withdraw(Long accountId, BigDecimal amount, UUID idempotencyKey) {
         var request = new BankAccountWithdrawRequest(amount);
         try {
-            return client.withdraw(accountId, request);
+            return client.withdraw(accountId, request, idempotencyKey);
         } catch (RuntimeException e) {
             handleHttpError(e);
             throw e;

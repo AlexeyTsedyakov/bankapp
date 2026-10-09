@@ -42,6 +42,9 @@ public interface AccountsServiceClient {
     BankAccountResponse createBankAccount(@RequestBody BankAccountCreateRequest request);
 
     @GetExchange("/bank-accounts")
+    BankAccountResponse getBankAccountByNumber(@RequestParam String number);
+
+    @GetExchange("/bank-accounts")
     List<BankAccountResponse> getUserBankAccounts(@RequestParam Long userId);
 
     @DeleteExchange("/bank-accounts/{id}")

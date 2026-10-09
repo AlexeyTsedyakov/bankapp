@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import org.example.bankapp.front.integration.accounts.validation.MinAge;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
@@ -15,7 +16,7 @@ public record UserRegisterRequest(
         @NotBlank @Size(min = 8, max = 255) String password,
         @NotBlank @Size(min = 2, max = 255) String firstName,
         @NotBlank @Size(min = 2, max = 255) String lastName,
-        @NotNull @MinAge LocalDate birthDate,
+        @NotNull @MinAge @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate birthDate,
         @Email String email
 ) {
     public UserRegisterRequest() {

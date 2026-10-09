@@ -125,7 +125,8 @@
                 <div class="field">
                     <label class="label">Сумма</label>
                     <div class="control">
-                        <input class="input" th:errorclass="is-danger" type="number" th:field="*{amount}" step="0.01" min="0.01" placeholder="0.00" required
+                        <input class="input" th:errorclass="is-danger" type="number" th:field="*{amount}"
+                               step="0.01" min="0.01" placeholder="0.00" required
                                th:disabled="${#lists.isEmpty(bankAccounts)}">
                     </div>
                     <p class="help is-danger" th:if="${#fields?.hasErrors('amount')}"

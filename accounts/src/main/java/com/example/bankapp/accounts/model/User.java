@@ -9,8 +9,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -40,9 +40,9 @@ public class User {
 
     @Column
     @CreatedDate
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column
     @LastModifiedDate
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 }

@@ -96,6 +96,17 @@ public class AccountsGateway {
         }
     }
 
+    public BankAccountResponse getBankAccountByNumber(String number) {
+        try {
+            return client.getBankAccountByNumber(number);
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new IntegrationException("Банковский счет не найден");
+        } catch (RuntimeException e) {
+            handleHttpError(e);
+            throw e;
+        }
+    }
+
     public List<BankAccountResponse> getUserBankAccounts(Long userId) {
         try {
             return client.getUserBankAccounts(userId);
