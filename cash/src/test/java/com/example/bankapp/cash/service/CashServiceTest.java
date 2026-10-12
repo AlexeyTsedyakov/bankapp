@@ -1,9 +1,12 @@
 package com.example.bankapp.cash.service;
 
+import com.example.bankapp.cash.exceptions.BlockerException;
 import com.example.bankapp.cash.exceptions.IdempotencyKeyException;
 import com.example.bankapp.cash.exceptions.InvalidAmountException;
 import com.example.bankapp.cash.integration.accounts.AccountsGateway;
 import com.example.bankapp.cash.integration.accounts.dto.response.BankAccountResponse;
+import com.example.bankapp.cash.integration.blocker.BlockerGateway;
+import com.example.bankapp.cash.integration.blocker.dto.BlockerResponse;
 import com.example.bankapp.cash.model.Currency;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,11 +28,15 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 public class CashServiceTest {
     @MockitoBean
-    private AccountsGateway gateway;
+    private AccountsGateway accountsGateway;
+    @MockitoBean
+    private BlockerGateway blockerGateway;
     @Autowired
     private CashService service;
 
     private BankAccountResponse bankAccount;
+    private BlockerResponse trueBlockerResponse = new BlockerResponse(true);
+    private BlockerResponse falseBlockerResponse = new BlockerResponse(false);
 
     @BeforeEach
     void setUp() {
@@ -47,13 +54,15 @@ public class CashServiceTest {
         long accountId = bankAccount.id();
         BigDecimal amount = new BigDecimal("33.33");
         UUID idempotencyKey = UUID.randomUUID();
-        when(gateway.deposit(accountId, amount, idempotencyKey))
+        when(blockerGateway.checkAccountOperation(accountId))
+                .thenReturn(falseBlockerResponse);
+        when(accountsGateway.deposit(accountId, amount, idempotencyKey))
                 .thenReturn(bankAccount);
 
         BankAccountResponse response = service.deposit(accountId, amount, idempotencyKey);
 
         assertThat(response).isEqualTo(bankAccount);
-        verify(gateway, times(1))
+        verify(accountsGateway, times(1))
                 .deposit(accountId, amount, idempotencyKey);
     }
 
@@ -65,7 +74,7 @@ public class CashServiceTest {
 
         assertThatThrownBy(() -> service.deposit(accountId, amount, idempotencyKey))
                 .isInstanceOf(InvalidAmountException.class);
-        verify(gateway, never())
+        verify(accountsGateway, never())
                 .deposit(anyLong(), any(BigDecimal.class), eq(idempotencyKey));
     }
 
@@ -76,7 +85,21 @@ public class CashServiceTest {
 
         assertThatThrownBy(() -> service.deposit(accountId, amount, null))
                 .isInstanceOf(IdempotencyKeyException.class);
-        verify(gateway, never())
+        verify(accountsGateway, never())
+                .deposit(anyLong(), any(BigDecimal.class), any());
+    }
+
+    @Test
+    void deposit_blockOperation_throwsException() {
+        long accountId = bankAccount.id();
+        BigDecimal amount = new BigDecimal("10.33");
+        UUID idempotencyKey = UUID.randomUUID();
+
+        when(blockerGateway.checkAccountOperation(accountId))
+                .thenReturn(trueBlockerResponse);
+        assertThatThrownBy(() -> service.deposit(accountId, amount, idempotencyKey))
+                .isInstanceOf(BlockerException.class);
+        verify(accountsGateway, never())
                 .deposit(anyLong(), any(BigDecimal.class), any());
     }
 
@@ -86,13 +109,15 @@ public class CashServiceTest {
         BigDecimal amount = new BigDecimal("10.33");
         UUID idempotencyKey = UUID.randomUUID();
 
-        when(gateway.withdraw(accountId, amount, idempotencyKey))
+        when(blockerGateway.checkAccountOperation(accountId))
+                .thenReturn(falseBlockerResponse);
+        when(accountsGateway.withdraw(accountId, amount, idempotencyKey))
                 .thenReturn(bankAccount);
 
         BankAccountResponse response = service.withdraw(accountId, amount, idempotencyKey);
 
         assertThat(response).isEqualTo(bankAccount);
-        verify(gateway, times(1))
+        verify(accountsGateway, times(1))
                 .withdraw(accountId, amount, idempotencyKey);
     }
 
@@ -104,7 +129,7 @@ public class CashServiceTest {
 
         assertThatThrownBy(() -> service.withdraw(accountId, amount, idempotencyKey))
                 .isInstanceOf(InvalidAmountException.class);
-        verify(gateway, never())
+        verify(accountsGateway, never())
                 .withdraw(anyLong(), any(BigDecimal.class), eq(idempotencyKey));
     }
 
@@ -115,7 +140,21 @@ public class CashServiceTest {
 
         assertThatThrownBy(() -> service.withdraw(accountId, amount, null))
                 .isInstanceOf(IdempotencyKeyException.class);
-        verify(gateway, never())
+        verify(accountsGateway, never())
+                .withdraw(anyLong(), any(BigDecimal.class), any());
+    }
+
+    @Test
+    void withdraw_blockOperation_throwsException() {
+        long accountId = bankAccount.id();
+        BigDecimal amount = new BigDecimal("10.33");
+        UUID idempotencyKey = UUID.randomUUID();
+
+        when(blockerGateway.checkAccountOperation(accountId))
+                .thenReturn(trueBlockerResponse);
+        assertThatThrownBy(() -> service.withdraw(accountId, amount, idempotencyKey))
+                .isInstanceOf(BlockerException.class);
+        verify(accountsGateway, never())
                 .withdraw(anyLong(), any(BigDecimal.class), any());
     }
 }

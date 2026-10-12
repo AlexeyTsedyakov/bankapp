@@ -27,7 +27,7 @@ public class CashGateway {
         }
     }
 
-    public void withdraw(CashWithdrawRequest withdrawRequest,UUID idempotencyKey) {
+    public void withdraw(CashWithdrawRequest withdrawRequest, UUID idempotencyKey) {
         try {
             client.withdraw(withdrawRequest, idempotencyKey);
         } catch (HttpClientErrorException.UnprocessableContent e) {
@@ -38,13 +38,15 @@ public class CashGateway {
         }
     }
 
-    private void handleHttpError(Exception e) {
+    private void handleHttpError(RuntimeException e) {
         log.error("Error executing request to the `Cash service`: {}", e.getMessage());
 
-        if (e instanceof HttpStatusCodeException) {
-            throw new IntegrationException("Ошибка выполнения запроса к сервису наличных");
-        } else if (e instanceof ResourceAccessException) {
-            throw new IntegrationException("Служба наличных не доступна");
+        switch (e) {
+            case HttpClientErrorException.Forbidden _ -> throw new IntegrationException("Операция заблокирована");
+            case HttpStatusCodeException _ ->
+                    throw new IntegrationException("Ошибка выполнения запроса к сервису наличных");
+            case ResourceAccessException _ -> throw new IntegrationException("Служба наличных не доступна");
+            default -> throw e;
         }
     }
 }

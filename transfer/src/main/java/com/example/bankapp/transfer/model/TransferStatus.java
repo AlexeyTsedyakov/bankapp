@@ -5,7 +5,7 @@ public enum TransferStatus {
     PROCESSING,
     COMPLETED,
     REFUNDED,
-    REJECTED,
+    BLOCKED,
     FAILED,
     RETRY_REQUIRED
 }

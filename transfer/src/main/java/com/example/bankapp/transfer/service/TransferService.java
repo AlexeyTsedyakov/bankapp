@@ -2,6 +2,7 @@ package com.example.bankapp.transfer.service;
 
 import com.example.bankapp.transfer.exceptions.ServiceUnavailableException;
 import com.example.bankapp.transfer.integration.accounts.AccountsGateway;
+import com.example.bankapp.transfer.integration.blocker.BlockerGateway;
 import com.example.bankapp.transfer.integration.exchange.ExchangeGateway;
 import com.example.bankapp.transfer.integration.exchange.dto.ConvertResponse;
 import com.example.bankapp.transfer.model.CalculationResult;
@@ -23,6 +24,7 @@ public class TransferService {
     private final TransferRepository repository;
     private final ExchangeGateway exchangeGateway;
     private final AccountsGateway accountsGateway;
+    private final BlockerGateway blockerGateway;
 
     @Transactional
     public Transfer save(Transfer transfer) {
@@ -88,5 +90,11 @@ public class TransferService {
                 transfer.getSourceAmount(),
                 transfer.getIdempotencyKey()
         );
+    }
+
+    @Retryable(includes = {ServiceUnavailableException.class})
+    public boolean shouldBlock(Transfer transfer) {
+        Long accountId = transfer.getFromAccountId();
+        return blockerGateway.checkAccountOperation(accountId).block();
     }
 }

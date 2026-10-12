@@ -55,8 +55,11 @@ public class TransferSagaOrchestrator {
         try {
             switch (step) {
                 case CHECK_BLOCKER -> {
-                    transfer.blockerChecked();
-                    // TODO: Реализовать проверку блокера
+                    if (transferService.shouldBlock(transfer)) {
+                        transfer.block();
+                    } else {
+                        transfer.blockerChecked();
+                    }
                 }
                 case CALCULATE_AMOUNT -> {
                     transfer.applyTargetAmountCalculation(transferService.calculateTargetAmount(transfer));

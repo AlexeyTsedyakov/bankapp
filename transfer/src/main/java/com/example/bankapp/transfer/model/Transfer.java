@@ -51,6 +51,10 @@ public class Transfer {
         this.status = TransferStatus.PROCESSING;
     }
 
+    public void block() {
+        this.status = TransferStatus.BLOCKED;
+    }
+
     public void blockerChecked() {
         this.step = TransferStep.CALCULATE_AMOUNT;
         this.status = TransferStatus.PROCESSING;
