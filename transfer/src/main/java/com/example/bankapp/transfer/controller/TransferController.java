@@ -3,7 +3,7 @@ package com.example.bankapp.transfer.controller;
 import com.example.bankapp.transfer.controller.dto.TransferRequest;
 import com.example.bankapp.transfer.mapper.TransferMapper;
 import com.example.bankapp.transfer.model.Transfer;
-import com.example.bankapp.transfer.service.TransferSagaOrchestrator;
+import com.example.bankapp.transfer.saga.TransferSagaOrchestrator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

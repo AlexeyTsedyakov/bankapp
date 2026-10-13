@@ -1,5 +1,6 @@
 package com.example.bankapp.transfer.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,12 +13,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+@Builder
 @Getter
-@Setter
 @Table("transfers")
 public class Transfer {
     @Id private Long id;
-    private UUID idempotencyKey;
+    @Setter private UUID idempotencyKey;
     private Long fromAccountId;
     private Long toAccountId;
     private Currency fromCurrency;
@@ -28,7 +29,7 @@ public class Transfer {
     private BigDecimal toCurrencyRate;
     private TransferStep step;
     private TransferStatus status;
-    private Integer failCount;
+    private int failCount;
     @Version private Long version;
     @CreatedDate private Instant createdAt;
     @LastModifiedDate private Instant updatedAt;
@@ -47,25 +48,18 @@ public class Transfer {
         this.failCount = 0;
     }
 
+    public void startCompensation() {
+        this.failCount = 0;
+        this.status = TransferStatus.PROCESSING;
+        this.step = TransferStep.REFUND_WITHDRAW;
+    }
+
     public void resume() {
         this.status = TransferStatus.PROCESSING;
     }
 
     public void block() {
         this.status = TransferStatus.BLOCKED;
-    }
-
-    public void blockerChecked() {
-        this.step = TransferStep.CALCULATE_AMOUNT;
-        this.status = TransferStatus.PROCESSING;
-    }
-
-    public void amountCalculated() {
-        this.step = TransferStep.WITHDRAW_SENDER;
-    }
-
-    public void senderWithdrawn() {
-        this.step = TransferStep.DEPOSIT_RECEIVER;
     }
 
     public void complete() {
@@ -81,14 +75,23 @@ public class Transfer {
         this.status = failCount >= 5 ? TransferStatus.FAILED : TransferStatus.RETRY_REQUIRED;
     }
 
-    public void startCompensation() {
-        this.failCount = 0;
-        this.status = TransferStatus.PROCESSING;
-        this.step = TransferStep.REFUND_WITHDRAW;
-    }
-
     public void failed() {
         this.status = TransferStatus.FAILED;
+    }
+
+    public void moveToCalculateAmount() {
+        this.step = TransferStep.CALCULATE_AMOUNT;
+        this.status = TransferStatus.PROCESSING;
+    }
+
+    public void moveToWithdrawSender() {
+        this.step = TransferStep.WITHDRAW_SENDER;
+        this.status = TransferStatus.PROCESSING;
+    }
+
+    public void moveToDepositReceiver() {
+        this.step = TransferStep.DEPOSIT_RECEIVER;
+        this.status = TransferStatus.PROCESSING;
     }
 
     public void applyTargetAmountCalculation(CalculationResult calculationResult) {
