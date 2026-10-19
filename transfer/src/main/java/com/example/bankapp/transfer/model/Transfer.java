@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -18,11 +19,9 @@ import java.util.UUID;
 @Table("transfers")
 public class Transfer {
     @Id private Long id;
-    @Setter private UUID idempotencyKey;
-    private Long fromAccountId;
-    private Long toAccountId;
-    private Currency fromCurrency;
-    private Currency toCurrency;
+    private UUID idempotencyKey;
+    @Embedded.Nullable(prefix = "from_") private AccountSnapshot from;
+    @Embedded.Nullable(prefix = "to_") private AccountSnapshot to;
     private BigDecimal sourceAmount;
     private BigDecimal targetAmount;
     private BigDecimal baseCurrencyRate;
@@ -30,9 +29,18 @@ public class Transfer {
     private TransferStep step;
     private TransferStatus status;
     private int failCount;
+    @Setter private String errorMessage;
     @Version private Long version;
     @CreatedDate private Instant createdAt;
     @LastModifiedDate private Instant updatedAt;
+
+    @Builder
+    public record AccountSnapshot(
+            Long accountId,
+            Long userId,
+            String accountNumber,
+            Currency currency
+    ) { }
 
     public boolean isActive() {
         return status == TransferStatus.NEW || status == TransferStatus.PROCESSING;
@@ -64,19 +72,27 @@ public class Transfer {
 
     public void complete() {
         this.status = TransferStatus.COMPLETED;
+        this.errorMessage = null;
     }
 
     public void refunded() {
         this.status = TransferStatus.REFUNDED;
     }
 
-    public void retryRequired() {
+    public void retryRequired(String message) {
         this.failCount++;
+        this.errorMessage = message;
         this.status = failCount >= 5 ? TransferStatus.FAILED : TransferStatus.RETRY_REQUIRED;
     }
 
-    public void failed() {
+    public void failed(String message) {
         this.status = TransferStatus.FAILED;
+        this.errorMessage = message;
+    }
+
+    public void moveToResolveAccounts() {
+        this.step = TransferStep.RESOLVE_ACCOUNTS;
+        this.status = TransferStatus.PROCESSING;
     }
 
     public void moveToCalculateAmount() {
@@ -94,34 +110,42 @@ public class Transfer {
         this.status = TransferStatus.PROCESSING;
     }
 
+    public void applyAccounts(AccountSnapshot from, AccountSnapshot to) {
+        this.from = from;
+        this.to = to;
+    }
+
     public void applyTargetAmountCalculation(CalculationResult calculationResult) {
-        this.fromCurrency = calculationResult.fromCurrency();
-        this.toCurrency = calculationResult.toCurrency();
         this.baseCurrencyRate = calculationResult.baseCurrencyRate();
         this.toCurrencyRate = calculationResult.toCurrencyRate();
-        this.targetAmount = calculationResult.amount();
+        this.targetAmount = calculationResult.result();
     }
 
     public void validateForCalculateTargetAmount() {
-        requireNonNull(fromAccountId, "fromAccountId");
-        requireNonNull(toAccountId, "toAccountId");
+        requireNonNull(from, "from");
+        requireNonNull(from.accountId, "from.accountId");
+        requireNonNull(to, "to");
+        requireNonNull(to.accountId, "to.accountId");
         requireNonNull(sourceAmount, "sourceAmount");
     }
 
     public void validateForWithdraw() {
-        requireNonNull(fromAccountId, "fromAccountId");
+        requireNonNull(from, "from");
+        requireNonNull(from.accountId, "from.accountId");
         requireNonNull(sourceAmount, "sourceAmount");
         requireNonNull(idempotencyKey, "idempotencyKey");
     }
 
     public void validateForDeposit() {
-        requireNonNull(toAccountId, "toAccountId");
+        requireNonNull(to, "to");
+        requireNonNull(to.accountId, "to.accountId");
         requireNonNull(targetAmount, "targetAmount");
         requireNonNull(idempotencyKey, "idempotencyKey");
     }
 
     public void validateForRefund() {
-        requireNonNull(fromAccountId, "fromAccountId");
+        requireNonNull(from, "from");
+        requireNonNull(from.accountId, "from.accountId");
         requireNonNull(sourceAmount, "sourceAmount");
         requireNonNull(idempotencyKey, "idempotencyKey");
     }

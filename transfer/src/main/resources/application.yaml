@@ -49,3 +49,5 @@ spring:
         base-url: http://localhost:8092/api/exchange
       blocker:
         base-url: http://localhost:8094/api/blocker
+      notifications:
+        base-url: http://localhost:8095/api/notifications

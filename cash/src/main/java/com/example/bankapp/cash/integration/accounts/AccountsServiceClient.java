@@ -3,10 +3,12 @@ package com.example.bankapp.cash.integration.accounts;
 import com.example.bankapp.cash.integration.accounts.dto.request.BankAccountDepositRequest;
 import com.example.bankapp.cash.integration.accounts.dto.request.BankAccountWithdrawRequest;
 import com.example.bankapp.cash.integration.accounts.dto.response.BankAccountResponse;
+import com.example.bankapp.cash.integration.accounts.dto.response.UserResponse;
 import org.springframework.security.oauth2.client.annotation.ClientRegistrationId;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
@@ -26,4 +28,7 @@ public interface AccountsServiceClient {
     BankAccountResponse withdraw(@PathVariable Long id,
                                  @RequestBody BankAccountWithdrawRequest request,
                                  @RequestHeader(name = "Idempotency-Key") UUID idempotencyKey);
+
+    @GetExchange("/users/{id}")
+    UserResponse getUser(@PathVariable Long id);
 }

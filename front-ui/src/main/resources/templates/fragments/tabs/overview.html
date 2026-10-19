@@ -100,6 +100,11 @@
                     <button class="delete" type="button" @click="show = false"></button>
                     <span th:text="${cashServiceErrorMessage}">Ошибка операции</span>
                 </div>
+                <div th:if="${cashServiceSuccessMessage}" class="notification is-success is-light is-fullwidth"
+                     x-data="{ show: true }" x-show="show" x-transition>
+                    <button class="delete" type="button" @click="show = false"></button>
+                    <span th:text="${cashServiceSuccessMessage}">Операция выполнена</span>
+                </div>
 
                 <div class="field">
                     <label class="label">Счет</label>

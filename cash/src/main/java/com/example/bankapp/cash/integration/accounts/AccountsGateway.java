@@ -4,6 +4,7 @@ import com.example.bankapp.cash.exceptions.*;
 import com.example.bankapp.cash.integration.accounts.dto.request.BankAccountDepositRequest;
 import com.example.bankapp.cash.integration.accounts.dto.request.BankAccountWithdrawRequest;
 import com.example.bankapp.cash.integration.accounts.dto.response.BankAccountResponse;
+import com.example.bankapp.cash.integration.accounts.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,15 @@ public class AccountsGateway {
         var request = new BankAccountWithdrawRequest(amount);
         try {
             return client.withdraw(accountId, request, idempotencyKey);
+        } catch (RuntimeException e) {
+            handleHttpError(e);
+            throw e;
+        }
+    }
+
+    public UserResponse getUser(Long userId) {
+        try {
+            return client.getUser(userId);
         } catch (RuntimeException e) {
             handleHttpError(e);
             throw e;

@@ -7,7 +7,9 @@ import com.example.bankapp.accounts.mapper.UserMapper;
 import com.example.bankapp.accounts.model.BankAccount;
 import com.example.bankapp.accounts.model.User;
 import com.example.bankapp.accounts.repository.UserRepository;
+import com.example.bankapp.accounts.service.event.UserCreated;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper mapper;
     private final BankAccountService bankAccountService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public User create(User user) {
@@ -32,7 +35,10 @@ public class UserService {
         String passwordHash = passwordEncoder.encode(user.getPassword());
         user.setPassword(passwordHash);
 
-        return repository.save(user);
+        User saved = repository.save(user);
+        eventPublisher.publishEvent(new UserCreated(saved));
+
+        return user;
     }
 
     @Transactional(readOnly = true)

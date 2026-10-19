@@ -22,4 +22,7 @@ public interface BankAccountRepository extends ListCrudRepository<BankAccount, L
     boolean existsByUserAndCurrency(AggregateReference<User, Long> user, Currency currency);
 
     Optional<BankAccount> findByAccountNumber(String accountNumber);
+
+    @Query("SELECT * FROM bank_accounts WHERE id = :id FOR UPDATE")
+    Optional<BankAccount> findByIdForUpdate(Long id);
 }

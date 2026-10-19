@@ -1,0 +1,35 @@
+server:
+  port: 8095
+
+spring:
+  application:
+    name: notifications
+  config:
+    import: optional:file:./.env[.properties]
+
+  mvc:
+    servlet:
+      path: /api/notifications
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?currentSchema=notifications
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+
+  flyway:
+    enabled: true
+    schemas: notifications
+    create-schemas: true
+    locations: classpath:db/migration
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KC_HTTP_HOST}:${KC_HTTP_PORT}/realms/${KC_REALM}
+        server-id: notifications
+
+  mail:
+    host: localhost
+    port: 1025
+    protocol: smtp

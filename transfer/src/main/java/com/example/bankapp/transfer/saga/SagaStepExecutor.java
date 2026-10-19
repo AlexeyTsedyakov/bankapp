@@ -27,8 +27,16 @@ class SagaStepExecutor {
                     if (transferService.shouldBlock(transfer)) {
                         transfer.block();
                     } else {
-                        transfer.moveToCalculateAmount();
+                        transfer.moveToResolveAccounts();
                     }
+                }
+                case RESOLVE_ACCOUNTS -> {
+                    transfer.applyAccounts(
+                            transferService.getAccountSnapshot(transfer.getFrom().accountId()),
+                            transferService.getAccountSnapshot(transfer.getTo().accountId())
+                    );
+                    transfer.moveToCalculateAmount();
+
                 }
                 case CALCULATE_AMOUNT -> {
                     transfer.applyTargetAmountCalculation(transferService.calculateTargetAmount(transfer));
@@ -50,10 +58,10 @@ class SagaStepExecutor {
                 default -> throw new TransferException("Этап не поддерживается: " + step.name());
             }
         } catch (ServiceUnavailableException e) {
-            transfer.retryRequired();
+            transfer.retryRequired(e.getMessage());
         } catch (Exception e) {
             log.error("Перевод не удался: {}", e.getMessage(), e);
-            transfer.failed();
+            transfer.failed(e.getMessage());
         }
 
         if (transfer.needCompensation()) {

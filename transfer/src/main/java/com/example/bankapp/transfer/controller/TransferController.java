@@ -1,7 +1,6 @@
 package com.example.bankapp.transfer.controller;
 
 import com.example.bankapp.transfer.controller.dto.TransferRequest;
-import com.example.bankapp.transfer.mapper.TransferMapper;
 import com.example.bankapp.transfer.model.Transfer;
 import com.example.bankapp.transfer.saga.TransferSagaOrchestrator;
 import jakarta.validation.Valid;
@@ -18,13 +17,20 @@ import java.util.UUID;
 @RestController
 public class TransferController {
     private final TransferSagaOrchestrator sagaOrchestrator;
-    private final TransferMapper mapper;
 
     @PostMapping
     public ResponseEntity<Void> transfer(@RequestBody @Valid TransferRequest request,
                                          @RequestHeader(name = "Idempotency-Key") UUID idempotencyKey) {
-        Transfer transfer = mapper.toEntity(request);
-        transfer.setIdempotencyKey(idempotencyKey);
+        Transfer transfer = Transfer.builder()
+                .idempotencyKey(idempotencyKey)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(request.fromAccountId())
+                        .build())
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(request.toAccountId())
+                        .build())
+                .sourceAmount(request.amount())
+                .build();
         sagaOrchestrator.startTransfer(transfer);
 
         return ResponseEntity.noContent().build();

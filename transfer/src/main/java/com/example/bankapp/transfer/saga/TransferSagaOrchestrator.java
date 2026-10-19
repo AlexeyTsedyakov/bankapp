@@ -31,7 +31,7 @@ public class TransferSagaOrchestrator {
     }
 
     public void startTransfer(Transfer transfer) {
-        if (Objects.equals(transfer.getFromAccountId(), transfer.getToAccountId())) {
+        if (Objects.equals(transfer.getFrom().accountId(), transfer.getTo().accountId())) {
             throw new SelfTransferNotAllowedException("Счета отправителя и получателя должны быть разные");
         }
 
@@ -59,7 +59,7 @@ public class TransferSagaOrchestrator {
                 transferService.save(transfer);
             }
         } catch (Exception e) {
-            log.error("Не удалось сохранить перевод, id={}", transfer.getId(), e);
+            log.error("Не удалось сохранить перевод, accountId={}", transfer.getId(), e);
         }
     }
 }

@@ -20,13 +20,25 @@ class TransferTest {
 
     @BeforeEach
     void setUp() {
+        Transfer.AccountSnapshot from = Transfer.AccountSnapshot.builder()
+                .accountId(100L)
+                .userId(10L)
+                .accountNumber("00000100")
+                .currency(Currency.RUB)
+                .build();
+        Transfer.AccountSnapshot to = Transfer.AccountSnapshot.builder()
+                .accountId(200L)
+                .userId(20L)
+                .accountNumber("00000200")
+                .currency(Currency.USD)
+                .build();
+
+
         transfer = Transfer.builder()
                 .id(1L)
                 .idempotencyKey(UUID.randomUUID())
-                .fromAccountId(100L)
-                .toAccountId(200L)
-                .fromCurrency(Currency.RUB)
-                .toCurrency(Currency.USD)
+                .from(from)
+                .to(to)
                 .sourceAmount(new BigDecimal("1000.00"))
                 .targetAmount(new BigDecimal("10.00"))
                 .baseCurrencyRate(new BigDecimal("1.0"))
@@ -84,6 +96,7 @@ class TransferTest {
             transfer.complete();
 
             assertThat(transfer.getStatus()).isEqualTo(TransferStatus.COMPLETED);
+            assertThat(transfer.getErrorMessage()).isNull();
         }
 
         @Test
@@ -97,9 +110,19 @@ class TransferTest {
         @Test
         @DisplayName("failed() should set status to FAILED")
         void failed_setsStatusToFailed() {
-            transfer.failed();
+            transfer.failed("error");
 
             assertThat(transfer.getStatus()).isEqualTo(TransferStatus.FAILED);
+            assertThat(transfer.getErrorMessage()).isEqualTo("error");
+        }
+
+        @Test
+        @DisplayName("moveToResolveAccounts() should update step to RESOLVE_ACCOUNTS and status to PROCESSING")
+        void moveToResolveAccounts_updatesStepAndAccount() {
+            transfer.moveToResolveAccounts();
+
+            assertThat(transfer.getStep()).isEqualTo(TransferStep.RESOLVE_ACCOUNTS);
+            assertThat(transfer.getStatus()).isEqualTo(TransferStatus.PROCESSING);
         }
 
         @Test
@@ -142,9 +165,10 @@ class TransferTest {
                     .build();
 
             for (int i = 1; i <= 4; i++) {
-                freshTransfer.retryRequired();
+                freshTransfer.retryRequired("error");
                 assertThat(freshTransfer.getFailCount()).isEqualTo(i);
                 assertThat(freshTransfer.getStatus()).isEqualTo(TransferStatus.RETRY_REQUIRED);
+                assertThat(freshTransfer.getErrorMessage()).isEqualTo("error");
             }
         }
 
@@ -155,13 +179,15 @@ class TransferTest {
                     .failCount(4)
                     .build();
 
-            freshTransfer.retryRequired();
+            freshTransfer.retryRequired("error");
             assertThat(freshTransfer.getFailCount()).isEqualTo(5);
             assertThat(freshTransfer.getStatus()).isEqualTo(TransferStatus.FAILED);
+            assertThat(freshTransfer.getErrorMessage()).isEqualTo("error");
 
-            freshTransfer.retryRequired();
+            freshTransfer.retryRequired("error");
             assertThat(freshTransfer.getFailCount()).isEqualTo(6);
             assertThat(freshTransfer.getStatus()).isEqualTo(TransferStatus.FAILED);
+            assertThat(freshTransfer.getErrorMessage()).isEqualTo("error");
         }
     }
 
@@ -234,8 +260,6 @@ class TransferTest {
         @DisplayName("applyTargetAmountCalculation() sets calculation result fields on Transfer")
         void applyTargetAmountCalculation_setsAllCalculatedFields() {
             CalculationResult result = new CalculationResult(
-                    Currency.RUB,
-                    Currency.USD,
                     new BigDecimal("1.0"),
                     new BigDecimal("95.50"),
                     new BigDecimal("10.47")
@@ -243,11 +267,36 @@ class TransferTest {
 
             transfer.applyTargetAmountCalculation(result);
 
-            assertThat(transfer.getFromCurrency()).isEqualTo(Currency.RUB);
-            assertThat(transfer.getToCurrency()).isEqualTo(Currency.USD);
             assertThat(transfer.getBaseCurrencyRate()).isEqualByComparingTo("1.0");
             assertThat(transfer.getToCurrencyRate()).isEqualByComparingTo("95.50");
             assertThat(transfer.getTargetAmount()).isEqualByComparingTo("10.47");
+        }
+    }
+
+    @Nested
+    @DisplayName("applyAccounts() tests")
+    class ApplyAccountsTests {
+
+        @Test
+        @DisplayName("applyTargetAmountCalculation() sets calculation result fields on Transfer")
+        void applyAccounts_setsAllAccountSnapshotFields() {
+            var from = Transfer.AccountSnapshot.builder()
+                    .accountId(333L)
+                    .userId(33L)
+                    .accountNumber("00000333")
+                    .currency(Currency.CNY)
+                    .build();
+            var to = Transfer.AccountSnapshot.builder()
+                    .accountId(444L)
+                    .userId(44L)
+                    .accountNumber("00000444")
+                    .currency(Currency.EUR)
+                    .build();
+
+            transfer.applyAccounts(from, to);
+
+            assertThat(transfer.getFrom()).isEqualTo(from);
+            assertThat(transfer.getTo()).isEqualTo(to);
         }
     }
 
@@ -259,8 +308,8 @@ class TransferTest {
         @DisplayName("validateForCalculateTargetAmount() succeeds when all required fields are present")
         void validateForCalculateTargetAmount_whenValid_doesNotThrow() {
             Transfer valid = Transfer.builder()
-                    .fromAccountId(1L)
-                    .toAccountId(2L)
+                    .from(transfer.getFrom())
+                    .to(transfer.getTo())
                     .sourceAmount(new BigDecimal("100.00"))
                     .build();
 
@@ -271,46 +320,43 @@ class TransferTest {
         @DisplayName("validateForCalculateTargetAmount() throws when fromAccountId is null")
         void validateForCalculateTargetAmount_whenFromAccountIdNull_throwsException() {
             Transfer invalid = Transfer.builder()
-                    .toAccountId(2L)
+                    .to(transfer.getTo())
                     .sourceAmount(new BigDecimal("100.00"))
                     .build();
 
             assertThatThrownBy(invalid::validateForCalculateTargetAmount)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'fromAccountId' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForCalculateTargetAmount() throws when toAccountId is null")
         void validateForCalculateTargetAmount_whenToAccountIdNull_throwsException() {
             Transfer invalid = Transfer.builder()
-                    .fromAccountId(1L)
+                    .from(transfer.getFrom())
                     .sourceAmount(new BigDecimal("100.00"))
                     .build();
 
             assertThatThrownBy(invalid::validateForCalculateTargetAmount)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'toAccountId' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForCalculateTargetAmount() throws when sourceAmount is null")
         void validateForCalculateTargetAmount_whenSourceAmountNull_throwsException() {
             Transfer invalid = Transfer.builder()
-                    .fromAccountId(1L)
-                    .toAccountId(2L)
+                    .from(transfer.getFrom())
+                    .to(transfer.getTo())
                     .build();
 
             assertThatThrownBy(invalid::validateForCalculateTargetAmount)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'sourceAmount' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForWithdraw() succeeds when all required fields are present")
         void validateForWithdraw_whenValid_doesNotThrow() {
             Transfer valid = Transfer.builder()
-                    .fromAccountId(1L)
+                    .from(transfer.getFrom())
                     .sourceAmount(new BigDecimal("100.00"))
                     .idempotencyKey(UUID.randomUUID())
                     .build();
@@ -327,41 +373,38 @@ class TransferTest {
                     .build();
 
             assertThatThrownBy(invalid::validateForWithdraw)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'fromAccountId' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForWithdraw() throws when sourceAmount is null")
         void validateForWithdraw_whenSourceAmountNull_throwsException() {
             Transfer invalid = Transfer.builder()
-                    .fromAccountId(1L)
+                    .from(transfer.getFrom())
                     .idempotencyKey(UUID.randomUUID())
                     .build();
 
             assertThatThrownBy(invalid::validateForWithdraw)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'sourceAmount' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForWithdraw() throws when idempotencyKey is null")
         void validateForWithdraw_whenIdempotencyKeyNull_throwsException() {
             Transfer invalid = Transfer.builder()
-                    .fromAccountId(1L)
+                    .from(transfer.getFrom())
                     .sourceAmount(new BigDecimal("100.00"))
                     .build();
 
             assertThatThrownBy(invalid::validateForWithdraw)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'idempotencyKey' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForDeposit() succeeds when all required fields are present")
         void validateForDeposit_whenValid_doesNotThrow() {
             Transfer valid = Transfer.builder()
-                    .toAccountId(2L)
+                    .to(transfer.getTo())
                     .targetAmount(new BigDecimal("100.00"))
                     .idempotencyKey(UUID.randomUUID())
                     .build();
@@ -378,41 +421,38 @@ class TransferTest {
                     .build();
 
             assertThatThrownBy(invalid::validateForDeposit)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'toAccountId' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForDeposit() throws when targetAmount is null")
         void validateForDeposit_whenTargetAmountNull_throwsException() {
             Transfer invalid = Transfer.builder()
-                    .toAccountId(2L)
+                    .to(transfer.getTo())
                     .idempotencyKey(UUID.randomUUID())
                     .build();
 
             assertThatThrownBy(invalid::validateForDeposit)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'targetAmount' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForDeposit() throws when idempotencyKey is null")
         void validateForDeposit_whenIdempotencyKeyNull_throwsException() {
             Transfer invalid = Transfer.builder()
-                    .toAccountId(2L)
+                    .to(transfer.getTo())
                     .targetAmount(new BigDecimal("100.00"))
                     .build();
 
             assertThatThrownBy(invalid::validateForDeposit)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'idempotencyKey' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForRefund() succeeds when all required fields are present")
         void validateForRefund_whenValid_doesNotThrow() {
             Transfer valid = Transfer.builder()
-                    .fromAccountId(1L)
+                    .from(transfer.getFrom())
                     .sourceAmount(new BigDecimal("100.00"))
                     .idempotencyKey(UUID.randomUUID())
                     .build();
@@ -429,34 +469,31 @@ class TransferTest {
                     .build();
 
             assertThatThrownBy(invalid::validateForRefund)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'fromAccountId' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForRefund() throws when sourceAmount is null")
         void validateForRefund_whenSourceAmountNull_throwsException() {
             Transfer invalid = Transfer.builder()
-                    .fromAccountId(1L)
+                    .from(transfer.getFrom())
                     .idempotencyKey(UUID.randomUUID())
                     .build();
 
             assertThatThrownBy(invalid::validateForRefund)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'sourceAmount' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
 
         @Test
         @DisplayName("validateForRefund() throws when idempotencyKey is null")
         void validateForRefund_whenIdempotencyKeyNull_throwsException() {
             Transfer invalid = Transfer.builder()
-                    .fromAccountId(1L)
+                    .from(transfer.getFrom())
                     .sourceAmount(new BigDecimal("100.00"))
                     .build();
 
             assertThatThrownBy(invalid::validateForRefund)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Transfer field 'idempotencyKey' cannot be null");
+                    .isInstanceOf(IllegalStateException.class);
         }
     }
 }

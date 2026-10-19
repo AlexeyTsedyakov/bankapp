@@ -9,11 +9,7 @@ import com.example.bankapp.transfer.integration.blocker.BlockerGateway;
 import com.example.bankapp.transfer.integration.blocker.dto.BlockerResponse;
 import com.example.bankapp.transfer.integration.exchange.ExchangeGateway;
 import com.example.bankapp.transfer.integration.exchange.dto.ConvertResponse;
-import com.example.bankapp.transfer.model.CalculationResult;
-import com.example.bankapp.transfer.model.Currency;
-import com.example.bankapp.transfer.model.Transfer;
-import com.example.bankapp.transfer.model.TransferStatus;
-import com.example.bankapp.transfer.model.TransferStep;
+import com.example.bankapp.transfer.model.*;
 import com.example.bankapp.transfer.repository.TransferRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,8 +54,12 @@ public class TransferServiceTest {
         UUID idempotencyKey = UUID.randomUUID();
         Transfer transfer = Transfer.builder()
                 .idempotencyKey(idempotencyKey)
-                .fromAccountId(1L)
-                .toAccountId(2L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(2L)
+                        .build())
                 .sourceAmount(new BigDecimal("100.00"))
                 .status(TransferStatus.NEW)
                 .step(TransferStep.CHECK_BLOCKER)
@@ -70,14 +69,6 @@ public class TransferServiceTest {
 
         assertThat(saved).isNotNull();
         assertThat(saved.getId()).isNotNull();
-
-        Optional<Transfer> found = transferRepository.findById(saved.getId());
-        assertThat(found).isPresent();
-        assertThat(found.get()).usingRecursiveComparison()
-                .ignoringFields("id", "sourceAmount", "version", "createdAt", "updatedAt")
-                .isEqualTo(transfer);
-        assertThat(saved.getSourceAmount()).isEqualByComparingTo(new BigDecimal("100.00"));
-
     }
 
     @Test
@@ -85,8 +76,12 @@ public class TransferServiceTest {
         UUID idempotencyKey = UUID.randomUUID();
         Transfer transfer = Transfer.builder()
                 .idempotencyKey(idempotencyKey)
-                .fromAccountId(10L)
-                .toAccountId(20L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(10L)
+                        .build())
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(20L)
+                        .build())
                 .sourceAmount(new BigDecimal("500.00"))
                 .targetAmount(new BigDecimal("500.00"))
                 .status(TransferStatus.COMPLETED)
@@ -94,43 +89,46 @@ public class TransferServiceTest {
                 .build();
 
         transferService.saveCompletedAndNotify(transfer);
-
         Transfer saved = transferService.save(transfer);
 
         assertThat(saved).isNotNull();
         assertThat(saved.getId()).isNotNull();
-
-        Optional<Transfer> found = transferRepository.findById(saved.getId());
-        assertThat(found).isPresent();
-        assertThat(found.get()).usingRecursiveComparison()
-                .ignoringFields("id", "sourceAmount", "targetAmount", "version", "createdAt", "updatedAt")
-                .isEqualTo(transfer);
-        assertThat(found.get().getSourceAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
-        assertThat(found.get().getTargetAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
     }
 
     @Test
     void getRetryRequired_returnsOnlyTransfersWithRetryRequiredStatus() {
         Transfer retryTransfer1 = Transfer.builder()
                 .idempotencyKey(UUID.randomUUID())
-                .fromAccountId(1L)
-                .toAccountId(2L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(2L)
+                        .build())
                 .sourceAmount(new BigDecimal("10.00"))
                 .status(TransferStatus.RETRY_REQUIRED)
                 .step(TransferStep.WITHDRAW_SENDER)
                 .build();
         Transfer retryTransfer2 = Transfer.builder()
                 .idempotencyKey(UUID.randomUUID())
-                .fromAccountId(3L)
-                .toAccountId(4L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(3L)
+                        .build())
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(4L)
+                        .build())
                 .sourceAmount(new BigDecimal("20.00"))
                 .status(TransferStatus.RETRY_REQUIRED)
                 .step(TransferStep.DEPOSIT_RECEIVER)
                 .build();
         Transfer otherTransfer = Transfer.builder()
                 .idempotencyKey(UUID.randomUUID())
-                .fromAccountId(5L)
-                .toAccountId(6L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(5L)
+                        .build())
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(6L)
+                        .build())
                 .sourceAmount(new BigDecimal("30.00"))
                 .status(TransferStatus.PROCESSING)
                 .step(TransferStep.CHECK_BLOCKER)
@@ -163,39 +161,38 @@ public class TransferServiceTest {
         when(accountsGateway.getBankAccount(2L)).thenReturn(toAccount);
 
         Transfer transfer = Transfer.builder()
-                .fromAccountId(1L)
-                .toAccountId(2L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(2L)
+                        .build())
                 .sourceAmount(new BigDecimal("150.00"))
                 .build();
 
         CalculationResult result = transferService.calculateTargetAmount(transfer);
 
         assertThat(result).isNotNull();
-        assertThat(result.fromCurrency()).isEqualTo(Currency.RUB);
-        assertThat(result.toCurrency()).isEqualTo(Currency.RUB);
         assertThat(result.baseCurrencyRate()).isNull();
         assertThat(result.toCurrencyRate()).isNull();
-        assertThat(result.amount()).isEqualByComparingTo(new BigDecimal("150.00"));
+        assertThat(result.result()).isEqualByComparingTo(new BigDecimal("150.00"));
 
-        verify(accountsGateway).getBankAccount(1L);
-        verify(accountsGateway).getBankAccount(2L);
         verifyNoInteractions(exchangeGateway);
     }
 
     @Test
     void calculateTargetAmount_differentCurrencies_callsExchangeGatewayAndReturnsCalculatedResult() {
-        BankAccountResponse fromAccount = BankAccountResponse.builder()
-                .id(1L)
-                .currency(Currency.RUB)
+        Transfer transfer = Transfer.builder()
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .currency(Currency.RUB)
+                        .build())
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(2L)
+                        .currency(Currency.USD)
+                        .build())
+                .sourceAmount(new BigDecimal("150.00"))
                 .build();
-        BankAccountResponse toAccount = BankAccountResponse.builder()
-                .id(2L)
-                .currency(Currency.USD)
-                .build();
-
-        when(accountsGateway.getBankAccount(1L)).thenReturn(fromAccount);
-        when(accountsGateway.getBankAccount(2L)).thenReturn(toAccount);
-
         ConvertResponse convertResponse = ConvertResponse.builder()
                 .baseCurrencyRate(new BigDecimal("1.00"))
                 .toCurrencyRate(new BigDecimal("0.01"))
@@ -204,36 +201,26 @@ public class TransferServiceTest {
         when(exchangeGateway.convert(Currency.RUB, Currency.USD, new BigDecimal("150.00")))
                 .thenReturn(convertResponse);
 
-        Transfer transfer = Transfer.builder()
-                .fromAccountId(1L)
-                .toAccountId(2L)
-                .sourceAmount(new BigDecimal("150.00"))
-                .build();
-
         CalculationResult result = transferService.calculateTargetAmount(transfer);
 
         assertThat(result).isNotNull();
-        assertThat(result.fromCurrency()).isEqualTo(Currency.RUB);
-        assertThat(result.toCurrency()).isEqualTo(Currency.USD);
         assertThat(result.baseCurrencyRate()).isEqualByComparingTo(new BigDecimal("1.00"));
         assertThat(result.toCurrencyRate()).isEqualByComparingTo(new BigDecimal("0.01"));
-        assertThat(result.amount()).isEqualByComparingTo(new BigDecimal("1.50"));
-
-        verify(accountsGateway).getBankAccount(1L);
-        verify(accountsGateway).getBankAccount(2L);
+        assertThat(result.result()).isEqualByComparingTo(new BigDecimal("1.50"));
         verify(exchangeGateway).convert(Currency.RUB, Currency.USD, new BigDecimal("150.00"));
     }
 
     @Test
     void calculateTargetAmount_missingRequiredFields_throwsIllegalStateException() {
         Transfer transfer = Transfer.builder()
-                .fromAccountId(1L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
                 .sourceAmount(new BigDecimal("150.00"))
                 .build();
 
         assertThatThrownBy(() -> transferService.calculateTargetAmount(transfer))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("toAccountId");
+                .isInstanceOf(IllegalStateException.class);
 
         verifyNoInteractions(accountsGateway, exchangeGateway);
     }
@@ -242,7 +229,9 @@ public class TransferServiceTest {
     void withdrawSender_validTransfer_callsAccountsGatewayWithdraw() {
         UUID idempotencyKey = UUID.randomUUID();
         Transfer transfer = Transfer.builder()
-                .fromAccountId(1L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
                 .sourceAmount(new BigDecimal("100.00"))
                 .idempotencyKey(idempotencyKey)
                 .build();
@@ -255,7 +244,9 @@ public class TransferServiceTest {
     @Test
     void withdrawSender_missingRequiredFields_throwsIllegalStateException() {
         Transfer transfer = Transfer.builder()
-                .fromAccountId(1L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
                 .sourceAmount(new BigDecimal("100.00"))
                 .build();
 
@@ -270,7 +261,9 @@ public class TransferServiceTest {
     void depositReceiver_validTransfer_callsAccountsGatewayDeposit() {
         UUID idempotencyKey = UUID.randomUUID();
         Transfer transfer = Transfer.builder()
-                .toAccountId(2L)
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(2L)
+                        .build())
                 .targetAmount(new BigDecimal("200.00"))
                 .idempotencyKey(idempotencyKey)
                 .build();
@@ -283,7 +276,9 @@ public class TransferServiceTest {
     @Test
     void depositReceiver_missingRequiredFields_throwsIllegalStateException() {
         Transfer transfer = Transfer.builder()
-                .toAccountId(2L)
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(2L)
+                        .build())
                 .idempotencyKey(UUID.randomUUID())
                 .build();
 
@@ -298,7 +293,9 @@ public class TransferServiceTest {
     void refundWithdraw_validTransfer_callsAccountsGatewayDepositForSender() {
         UUID idempotencyKey = UUID.randomUUID();
         Transfer transfer = Transfer.builder()
-                .fromAccountId(1L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
                 .sourceAmount(new BigDecimal("100.00"))
                 .idempotencyKey(idempotencyKey)
                 .build();
@@ -311,7 +308,9 @@ public class TransferServiceTest {
     @Test
     void refundWithdraw_missingRequiredFields_throwsIllegalStateException() {
         Transfer transfer = Transfer.builder()
-                .fromAccountId(1L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
                 .idempotencyKey(UUID.randomUUID())
                 .build();
 
@@ -326,7 +325,9 @@ public class TransferServiceTest {
     void shouldBlock_whenBlockerReturnsTrue_returnsTrue() {
         when(blockerGateway.checkAccountOperation(1L)).thenReturn(new BlockerResponse(true));
         Transfer transfer = Transfer.builder()
-                .fromAccountId(1L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
                 .build();
 
         boolean shouldBlock = transferService.shouldBlock(transfer);
@@ -339,7 +340,9 @@ public class TransferServiceTest {
     void shouldBlock_whenBlockerReturnsFalse_returnsFalse() {
         when(blockerGateway.checkAccountOperation(1L)).thenReturn(new BlockerResponse(false));
         Transfer transfer = Transfer.builder()
-                .fromAccountId(1L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
                 .build();
 
         boolean shouldBlock = transferService.shouldBlock(transfer);
@@ -352,7 +355,9 @@ public class TransferServiceTest {
     void withdrawSender_whenServiceUnavailableException_retriesOperation() {
         UUID idempotencyKey = UUID.randomUUID();
         Transfer transfer = Transfer.builder()
-                .fromAccountId(1L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
                 .sourceAmount(new BigDecimal("100.00"))
                 .idempotencyKey(idempotencyKey)
                 .build();

@@ -3,7 +3,6 @@ package com.example.bankapp.transfer.saga;
 import com.example.bankapp.transfer.exceptions.ServiceUnavailableException;
 import com.example.bankapp.transfer.exceptions.TransferException;
 import com.example.bankapp.transfer.model.CalculationResult;
-import com.example.bankapp.transfer.model.Currency;
 import com.example.bankapp.transfer.model.Transfer;
 import com.example.bankapp.transfer.service.TransferService;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,8 +32,12 @@ public class SagaStepExecutorTest {
         Transfer realTransfer = Transfer.builder()
                 .id(1L)
                 .idempotencyKey(UUID.randomUUID())
-                .fromAccountId(1L)
-                .toAccountId(2L)
+                .from(Transfer.AccountSnapshot.builder()
+                        .accountId(1L)
+                        .build())
+                .to(Transfer.AccountSnapshot.builder()
+                        .accountId(2L)
+                        .build())
                 .sourceAmount(new BigDecimal("100.00"))
                 .failCount(0)
                 .build();
@@ -53,13 +56,33 @@ public class SagaStepExecutorTest {
     }
 
     @Test
-    void executeStep_checkBlocker_movesToCalculateAmountWhenShouldNotBlock() {
+    void executeStep_checkBlocker_movesToResolveAccountsWhenShouldNotBlock() {
         transfer.start();
         when(transferService.shouldBlock(any(Transfer.class))).thenReturn(false);
 
         stepExecutor.executeStep(transfer);
 
         verify(transferService).shouldBlock(transfer);
+        verify(transfer).moveToResolveAccounts();
+    }
+
+    @Test
+    void executeStep_resolveAccounts_movesToCalculateAmount() {
+        transfer.moveToResolveAccounts();
+        Transfer.AccountSnapshot fromSnapshot = Transfer.AccountSnapshot.builder()
+                .accountId(1L)
+                .build();
+        Transfer.AccountSnapshot toSnapshot = Transfer.AccountSnapshot.builder()
+                .accountId(2L)
+                .build();
+        when(transferService.getAccountSnapshot(1L)).thenReturn(fromSnapshot);
+        when(transferService.getAccountSnapshot(2L)).thenReturn(toSnapshot);
+
+        stepExecutor.executeStep(transfer);
+
+        verify(transferService).getAccountSnapshot(1L);
+        verify(transferService).getAccountSnapshot(2L);
+        verify(transfer).applyAccounts(fromSnapshot, toSnapshot);
         verify(transfer).moveToCalculateAmount();
     }
 
@@ -67,8 +90,6 @@ public class SagaStepExecutorTest {
     void executeStep_calculateAmount_appliesCalculationAndMovesToWithdrawSender() {
         transfer.moveToCalculateAmount();
         CalculationResult calculationResult = new CalculationResult(
-                Currency.RUB,
-                Currency.USD,
                 BigDecimal.ONE,
                 new BigDecimal("0.01"),
                 new BigDecimal("1.00")
@@ -123,7 +144,7 @@ public class SagaStepExecutorTest {
     void executeStep_nullStep_marksTransferAsFailed() {
         stepExecutor.executeStep(transfer);
 
-        verify(transfer).failed();
+        verify(transfer).failed(anyString());
     }
 
     @Test
@@ -135,7 +156,7 @@ public class SagaStepExecutorTest {
         stepExecutor.executeStep(transfer);
 
         verify(transferService).withdrawSender(transfer);
-        verify(transfer).retryRequired();
+        verify(transfer).retryRequired(anyString());
         verify(transfer, never()).moveToDepositReceiver();
     }
 
@@ -148,7 +169,7 @@ public class SagaStepExecutorTest {
         stepExecutor.executeStep(transfer);
 
         verify(transferService).withdrawSender(transfer);
-        verify(transfer).failed();
+        verify(transfer).failed(anyString());
         verify(transfer, never()).moveToDepositReceiver();
         verify(transfer, never()).startCompensation();
     }
@@ -162,7 +183,7 @@ public class SagaStepExecutorTest {
         stepExecutor.executeStep(transfer);
 
         verify(transferService).depositReceiver(transfer);
-        verify(transfer).failed();
+        verify(transfer).failed(anyString());
         verify(transfer).needCompensation();
         verify(transfer).startCompensation();
     }

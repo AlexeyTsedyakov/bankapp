@@ -20,9 +20,6 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
-    annotationProcessor(libs.lombok.mapstruct.binding)
-    implementation(libs.mapstruct)
-    annotationProcessor(libs.mapstruct.processor)
     implementation(libs.shedlock.spring)
     implementation(libs.shedlock.provider.jdbc.template)
 

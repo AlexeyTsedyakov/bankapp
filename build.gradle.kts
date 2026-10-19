@@ -22,7 +22,30 @@ subprojects {
         }
     }
 
-    tasks.withType<Test> {
+    // Общие настройки для всех задач типа Test (и test, и integrationTest)
+    tasks.withType<Test>().configureEach {
         useJUnitPlatform()
+    }
+
+    // Обычный test — без интеграционных тестов
+    tasks.named<Test>("test") {
+        useJUnitPlatform {
+            excludeTags("integration")
+        }
+    }
+
+    // Отдельная задача для интеграционных тестов
+    val testSourceSet = extensions.getByType<SourceSetContainer>().named("test")
+    tasks.register<Test>("integrationTest") {
+        description = "Runs integration tests."
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+
+        testClassesDirs = testSourceSet.get().output.classesDirs
+        classpath = testSourceSet.get().runtimeClasspath
+
+        useJUnitPlatform {
+            includeTags("integration")
+        }
+        shouldRunAfter(tasks.named("test"))
     }
 }

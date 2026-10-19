@@ -78,6 +78,7 @@ public class OverviewController {
             try {
                 UUID idempotencyKey = UUID.randomUUID();
                 cashGateway.deposit(depositRequest, idempotencyKey);
+                model.addAttribute("cashServiceSuccessMessage", "Операция выполнена");
             } catch (IntegrationException e) {
                 model.addAttribute("cashServiceErrorMessage", e.getMessage());
             }
@@ -101,6 +102,7 @@ public class OverviewController {
             try {
                 UUID idempotencyKey = UUID.randomUUID();
                 cashGateway.withdraw(withdrawRequest, idempotencyKey);
+                model.addAttribute("cashServiceSuccessMessage", "Операция выполнена");
             } catch (IntegrationException e) {
                 model.addAttribute("cashServiceErrorMessage", e.getMessage());
             }

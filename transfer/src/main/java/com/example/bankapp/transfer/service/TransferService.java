@@ -2,6 +2,7 @@ package com.example.bankapp.transfer.service;
 
 import com.example.bankapp.transfer.exceptions.ServiceUnavailableException;
 import com.example.bankapp.transfer.integration.accounts.AccountsGateway;
+import com.example.bankapp.transfer.integration.accounts.dto.response.BankAccountResponse;
 import com.example.bankapp.transfer.integration.blocker.BlockerGateway;
 import com.example.bankapp.transfer.integration.exchange.ExchangeGateway;
 import com.example.bankapp.transfer.integration.exchange.dto.ConvertResponse;
@@ -10,7 +11,9 @@ import com.example.bankapp.transfer.model.Currency;
 import com.example.bankapp.transfer.model.Transfer;
 import com.example.bankapp.transfer.model.TransferStatus;
 import com.example.bankapp.transfer.repository.TransferRepository;
+import com.example.bankapp.transfer.service.event.TransferCompleted;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,7 @@ public class TransferService {
     private final ExchangeGateway exchangeGateway;
     private final AccountsGateway accountsGateway;
     private final BlockerGateway blockerGateway;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Transfer save(Transfer transfer) {
@@ -33,8 +37,8 @@ public class TransferService {
 
     @Transactional
     public void saveCompletedAndNotify(Transfer transfer) {
-        repository.save(transfer);
-        // TODO: Реализовать оповещение через outbox
+        Transfer saved = repository.save(transfer);
+        eventPublisher.publishEvent(new TransferCompleted(saved));
     }
 
     @Transactional(readOnly = true)
@@ -43,21 +47,35 @@ public class TransferService {
     }
 
     @Retryable(includes = {ServiceUnavailableException.class})
+    public boolean shouldBlock(Transfer transfer) {
+        Long accountId = transfer.getFrom().accountId();
+        return blockerGateway.checkAccountOperation(accountId).block();
+    }
+
+    @Retryable(includes = {ServiceUnavailableException.class})
+    public Transfer.AccountSnapshot getAccountSnapshot(Long id) {
+        BankAccountResponse response = accountsGateway.getBankAccount(id);
+
+        return Transfer.AccountSnapshot.builder()
+                .accountId(response.id())
+                .userId(response.userId())
+                .accountNumber(response.accountNumber())
+                .currency(response.currency())
+                .build();
+    }
+
+    @Retryable(includes = {ServiceUnavailableException.class})
     public CalculationResult calculateTargetAmount(Transfer transfer) {
         transfer.validateForCalculateTargetAmount();
-        Currency fromCurrency = accountsGateway
-                .getBankAccount(transfer.getFromAccountId())
-                .currency();
-        Currency toCurrency = accountsGateway
-                .getBankAccount(transfer.getToAccountId())
-                .currency();
+        Currency fromCurrency = transfer.getFrom().currency();
+        Currency toCurrency = transfer.getTo().currency();
         BigDecimal amount = transfer.getSourceAmount();
 
         if (fromCurrency == toCurrency) {
-            return new CalculationResult(fromCurrency, toCurrency, null, null, amount);
+            return new CalculationResult(null, null, amount);
         } else {
             ConvertResponse response = exchangeGateway.convert(fromCurrency, toCurrency, amount);
-            return new CalculationResult(fromCurrency, toCurrency,
+            return new CalculationResult(
                     response.baseCurrencyRate(), response.toCurrencyRate(), response.converted());
         }
     }
@@ -66,7 +84,7 @@ public class TransferService {
     public void withdrawSender(Transfer transfer) {
         transfer.validateForWithdraw();
         accountsGateway.withdraw(
-                transfer.getFromAccountId(),
+                transfer.getFrom().accountId(),
                 transfer.getSourceAmount(),
                 transfer.getIdempotencyKey()
         );
@@ -76,7 +94,7 @@ public class TransferService {
     public void depositReceiver(Transfer transfer) {
         transfer.validateForDeposit();
         accountsGateway.deposit(
-                transfer.getToAccountId(),
+                transfer.getTo().accountId(),
                 transfer.getTargetAmount(),
                 transfer.getIdempotencyKey()
         );
@@ -86,15 +104,9 @@ public class TransferService {
     public void refundWithdraw(Transfer transfer) {
         transfer.validateForRefund();
         accountsGateway.deposit(
-                transfer.getFromAccountId(),
+                transfer.getFrom().accountId(),
                 transfer.getSourceAmount(),
                 transfer.getIdempotencyKey()
         );
-    }
-
-    @Retryable(includes = {ServiceUnavailableException.class})
-    public boolean shouldBlock(Transfer transfer) {
-        Long accountId = transfer.getFromAccountId();
-        return blockerGateway.checkAccountOperation(accountId).block();
     }
 }

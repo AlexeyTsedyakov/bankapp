@@ -70,15 +70,19 @@ public class BankAccountService {
     @Transactional
     public BankAccount deposit(Long id, BigDecimal amount, UUID idempotencyKey) {
         validateIdempotencyKey(idempotencyKey);
+
+        // Блокируем строку
+        BankAccount account = findByIdForUpdateOrThrow(id);
+
         if (operationRepository.existsByIdempotencyKeyAndOperationType(
                 idempotencyKey, OperationType.DEPOSIT)) {
-            return findByIdOrThrow(id);
+            return account;
         }
 
-        BankAccount account = findByIdOrThrow(id);
         account.deposit(amount);
         account = accountRepository.save(account);
-        recordOperation(account, idempotencyKey, OperationType.DEPOSIT, amount);
+
+        recordOperation(id, idempotencyKey, OperationType.DEPOSIT, amount);
 
         return account;
     }
@@ -86,15 +90,19 @@ public class BankAccountService {
     @Transactional
     public BankAccount withdraw(Long id, BigDecimal amount, UUID idempotencyKey) {
         validateIdempotencyKey(idempotencyKey);
+
+        // Блокируем строку
+        BankAccount account = findByIdForUpdateOrThrow(id);
+
         if (operationRepository.existsByIdempotencyKeyAndOperationType(
                 idempotencyKey, OperationType.WITHDRAW)) {
-            return findByIdOrThrow(id);
+            return account;
         }
 
-        BankAccount account = findByIdOrThrow(id);
         account.withdraw(amount);
         account = accountRepository.save(account);
-        recordOperation(account, idempotencyKey, OperationType.WITHDRAW, amount);
+
+        recordOperation(id, idempotencyKey, OperationType.WITHDRAW, amount);
 
         return account;
     }
@@ -104,19 +112,25 @@ public class BankAccountService {
                 .orElseThrow(() -> new EntityNotFoundException("Банковский счет на найден, id: " + id));
     }
 
+    private @NonNull BankAccount findByIdForUpdateOrThrow(Long id) {
+        return accountRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new EntityNotFoundException("Банковский счет на найден, id: " + id));
+    }
+
     private void validateIdempotencyKey(UUID idempotencyKey) {
         if (idempotencyKey == null) {
             throw new IdempotencyKeyException("Ключ идемпотентности не может быть null");
         }
     }
 
-    private void recordOperation(BankAccount account, UUID idempotencyKey, OperationType deposit, BigDecimal amount) {
+    private void recordOperation(Long accountId, UUID idempotencyKey, OperationType deposit, BigDecimal amount) {
         BankAccountOperation operation = BankAccountOperation.builder()
-                .accountId(AggregateReference.to(account.getId()))
+                .accountId(AggregateReference.to(accountId))
                 .idempotencyKey(idempotencyKey)
                 .operationType(deposit)
                 .amount(amount)
                 .build();
+
         operationRepository.save(operation);
     }
 }
