@@ -3,6 +3,7 @@ mapstruct = "1.6.3"
 lombok-mapstruct = "0.2.0"
 htmx-spring-boot = "5.1.0"
 shedlock = "7.10.1"
+jsr305 = "3.0.2"
 
 [libraries]
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
@@ -12,3 +13,4 @@ htmx-spring-boot = { module = "io.github.wimdeblauwe:htmx-spring-boot", version.
 htmx-spring-boot-thymeleaf = { module = "io.github.wimdeblauwe:htmx-spring-boot-thymeleaf", version.ref = "htmx-spring-boot" }
 shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
 shedlock-provider-jdbc-template = { module = "net.javacrumbs.shedlock:shedlock-provider-jdbc-template", version.ref = "shedlock" }
+jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305" }

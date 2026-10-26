@@ -1,5 +1,6 @@
 server:
-  port: 8092
+  port: 0
+  forward-headers-strategy: native
 
 spring:
   application:
@@ -7,9 +8,12 @@ spring:
   config:
     import: optional:file:./.env[.properties]
 
-  mvc:
-    servlet:
-      path: /api/exchange
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}:${random.uuid}
 
   security:
     oauth2:

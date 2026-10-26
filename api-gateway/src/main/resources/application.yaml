@@ -1,0 +1,65 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+
+    gateway:
+      server:
+        webflux:
+          trusted-proxies: '127\.0\.0\.1|0:0:0:0:0:0:0:1|172\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+          routes:
+            - id: accounts
+              uri: lb://accounts
+              predicates:
+                - Path=/api/accounts/**
+              filters:
+                - StripPrefix=1
+
+            - id: blocker
+              uri: lb://blocker
+              predicates:
+                - Path=/api/blocker/**
+              filters:
+                - StripPrefix=1
+
+            - id: cash
+              uri: lb://cash
+              predicates:
+                - Path=/api/cash/**
+              filters:
+                - StripPrefix=1
+
+            - id: exchange
+              uri: lb://exchange
+              predicates:
+                - Path=/api/exchange/**
+              filters:
+                - StripPrefix=1
+
+            - id: front-ui
+              uri: lb://front-ui
+              order: 10000        # проверяется после всех остальных маршрутов
+              predicates:
+                - Path=/**
+
+            - id: notifications
+              uri: lb://notifications
+              predicates:
+                - Path=/api/notifications/**
+              filters:
+                - StripPrefix=1
+
+            - id: transfer
+              uri: lb://transfer
+              predicates:
+                - Path=/api/transfer/**
+              filters:
+                - StripPrefix=1
+

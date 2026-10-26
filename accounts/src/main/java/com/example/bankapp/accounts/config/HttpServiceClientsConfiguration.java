@@ -5,6 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.service.registry.ImportHttpServices;
 
 @Configuration
-@ImportHttpServices(group = "notifications", types = NotificationsServiceClient.class)
+@ImportHttpServices(group = "api-gateway", types = NotificationsServiceClient.class)
 public class HttpServiceClientsConfiguration {
 }

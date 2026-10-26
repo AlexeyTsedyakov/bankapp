@@ -6,15 +6,13 @@ import com.example.bankapp.transfer.saga.TransferSagaOrchestrator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/transfer")
 public class TransferController {
     private final TransferSagaOrchestrator sagaOrchestrator;
 

@@ -9,7 +9,7 @@ import org.springframework.web.service.annotation.PostExchange;
 
 import java.util.UUID;
 
-@HttpExchange
+@HttpExchange("/api/transfer")
 @ClientRegistrationId("oauth2-service-client")
 public interface TransferServiceClient {
 

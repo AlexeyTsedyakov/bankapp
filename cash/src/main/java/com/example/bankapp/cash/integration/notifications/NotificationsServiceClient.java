@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
-@HttpExchange
+@HttpExchange("/api/notifications")
 @ClientRegistrationId("oauth2-service-client")
 public interface NotificationsServiceClient {
 

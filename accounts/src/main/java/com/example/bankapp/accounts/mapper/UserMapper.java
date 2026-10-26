@@ -5,12 +5,9 @@ import com.example.bankapp.accounts.controller.dto.request.UserUpdateRequest;
 import com.example.bankapp.accounts.controller.dto.response.UserCredentialsResponse;
 import com.example.bankapp.accounts.controller.dto.response.UserResponse;
 import com.example.bankapp.accounts.model.User;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
     User toEntity(UserRegisterRequest registerRequest);
 

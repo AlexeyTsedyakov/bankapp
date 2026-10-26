@@ -7,7 +7,7 @@ import org.springframework.web.service.annotation.HttpExchange;
 
 import java.util.List;
 
-@HttpExchange
+@HttpExchange("/api/exchange")
 @ClientRegistrationId("oauth2-service-client")
 public interface ExchangeServiceClient {
 

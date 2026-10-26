@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/bank-accounts")
+@RequestMapping("/accounts/bank-accounts")
 public class BankAccountController {
     private final BankAccountMapper bankAccountMapper;
     private final BankAccountService bankAccountService;

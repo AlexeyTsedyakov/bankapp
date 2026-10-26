@@ -58,7 +58,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "accounts-access")
     void registerUser_NonExistingUsername_returns200() {
         var request = mockMvc.post()
-                .uri("/users")
+                .uri("/accounts/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequestDto));
 
@@ -75,7 +75,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "accounts-access")
     void registerUser_ExistingUsername_returns409() {
         var request = mockMvc.post()
-                .uri("/users")
+                .uri("/accounts/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequestDto));
 
@@ -87,7 +87,7 @@ public class UserControllerTest {
     @WithAnonymousUser
     void registerUser_anonymousUser_returns401() {
         var request = mockMvc.post()
-                .uri("/users")
+                .uri("/accounts/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequestDto));
 
@@ -99,7 +99,7 @@ public class UserControllerTest {
     @WithMockUser
     void registerUser_user_withoutRole_returns403() {
         var request = mockMvc.post()
-                .uri("/users")
+                .uri("/accounts/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequestDto));
 
@@ -112,7 +112,7 @@ public class UserControllerTest {
     void getUser_ExistingId_returns200() throws UnsupportedEncodingException {
         UserResponse responseDto = registerUser();
         var getUserRequest = mockMvc.get()
-                .uri("/users/{id}", responseDto.id());
+                .uri("/accounts/users/{id}", responseDto.id());
 
         assertThat(getUserRequest)
                 .hasStatusOk()
@@ -125,7 +125,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "accounts-access")
     void getUserBank_NonExistingId_returns404() {
         var request = mockMvc.get()
-                .uri("/users/{id}", 999L);
+                .uri("/accounts/users/{id}", 999L);
         assertThat(request)
                 .hasStatus(HttpStatus.NOT_FOUND);
     }
@@ -134,13 +134,13 @@ public class UserControllerTest {
     @WithMockUser(roles = "accounts-access")
     void getUserCredentials_ExistingUsername_returns200() {
         mockMvc.post()
-                .uri("/users")
+                .uri("/accounts/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequestDto))
                 .exchange();
 
         var request = mockMvc.get()
-                .uri("/users/{username}/credentials", registerRequestDto.username());
+                .uri("/accounts/users/{username}/credentials", registerRequestDto.username());
         assertThat(request)
                 .hasStatusOk()
                 .bodyJson()
@@ -154,7 +154,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "accounts-access")
     void getUserCredentials_NonExistingUsername_returns404() {
         var request = mockMvc.get()
-                .uri("/users/{username}/credentials", "NonExistentUsername");
+                .uri("/accounts/users/{username}/credentials", "NonExistentUsername");
         assertThat(request)
                 .hasStatus(HttpStatus.NOT_FOUND);
     }
@@ -170,7 +170,7 @@ public class UserControllerTest {
                 .email(responseDto.email())
                 .build();
         var updateRequest = mockMvc.put()
-                .uri("/users/{id}", responseDto.id())
+                .uri("/accounts/users/{id}", responseDto.id())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequestDto));
 
@@ -191,7 +191,7 @@ public class UserControllerTest {
                 .email("email@test.com")
                 .build();
         var updateRequest = mockMvc.put()
-                .uri("/users/{id}", 999L)
+                .uri("/accounts/users/{id}", 999L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequestDto));
 
@@ -205,7 +205,7 @@ public class UserControllerTest {
         UserResponse userDto = registerUser();
         PasswordUpdateRequest passwordUpdateRequest = new PasswordUpdateRequest("newPassword");
         var request = mockMvc.patch()
-                .uri("/users/{id}/password", userDto.id())
+                .uri("/accounts/users/{id}/password", userDto.id())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(passwordUpdateRequest));
 
@@ -218,7 +218,7 @@ public class UserControllerTest {
     void deleteUser_userWithoutBankAccounts_returns204() throws UnsupportedEncodingException {
         UserResponse userDto = registerUser();
         var request = mockMvc.delete()
-                .uri("/users/{id}", userDto.id());
+                .uri("/accounts/users/{id}", userDto.id());
 
         assertThat(request)
                 .hasStatus(HttpStatus.NO_CONTENT);
@@ -230,7 +230,7 @@ public class UserControllerTest {
         UserResponse userDto = registerUser();
         createBankAccount(userDto.id());
         var request = mockMvc.delete()
-                .uri("/users/{id}", userDto.id());
+                .uri("/accounts/users/{id}", userDto.id());
 
         assertThat(request)
                 .hasStatus(HttpStatus.CONFLICT);
@@ -238,7 +238,7 @@ public class UserControllerTest {
 
     private UserResponse registerUser() throws UnsupportedEncodingException {
         var registerResponse = mockMvc.post()
-                .uri("/users")
+                .uri("/accounts/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequestDto))
                 .exchange()
@@ -254,7 +254,7 @@ public class UserControllerTest {
                 .currency(Currency.RUB)
                 .build();
         var createResponse = mockMvc.post()
-                .uri("/bank-accounts")
+                .uri("/accounts/bank-accounts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto))
                 .exchange()

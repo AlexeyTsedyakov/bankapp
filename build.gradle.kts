@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
     group = "org.example"
-    version = "1.0-SNAPSHOT"
+    version = "v1.0"
 
     repositories {
         mavenCentral()
@@ -20,6 +20,11 @@ subprojects {
         toolchain {
             languageVersion = JavaLanguageVersion.of(25)
         }
+    }
+
+    // Оставляем только fat-jar при сборке
+    tasks.jar {
+        enabled = false
     }
 
     // Общие настройки для всех задач типа Test (и test, и integrationTest)

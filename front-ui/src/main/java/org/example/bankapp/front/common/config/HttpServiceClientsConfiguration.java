@@ -8,9 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.service.registry.ImportHttpServices;
 
 @Configuration
-@ImportHttpServices(group = "accounts", types = AccountsServiceClient.class)
-@ImportHttpServices(group = "cash", types = CashServiceClient.class)
-@ImportHttpServices(group = "exchange", types = ExchangeServiceClient.class)
-@ImportHttpServices(group = "transfer", types = TransferServiceClient.class)
+@ImportHttpServices(group = "api-gateway", types = AccountsServiceClient.class)
+@ImportHttpServices(group = "api-gateway", types = CashServiceClient.class)
+@ImportHttpServices(group = "api-gateway", types = ExchangeServiceClient.class)
+@ImportHttpServices(group = "api-gateway", types = TransferServiceClient.class)
 public class HttpServiceClientsConfiguration {
 }

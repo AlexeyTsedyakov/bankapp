@@ -1,5 +1,6 @@
 server:
-  port: 8093
+  port: 0
+  forward-headers-strategy: native
 
 spring:
   application:
@@ -7,9 +8,12 @@ spring:
   config:
     import: optional:file:./.env[.properties]
 
-  mvc:
-    servlet:
-      path: /api/transfer
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}:${random.uuid}
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?currentSchema=transfer
@@ -43,11 +47,5 @@ spring:
 
   http:
     serviceclient:
-      accounts:
-        base-url: http://localhost:8090/api/accounts
-      exchange:
-        base-url: http://localhost:8092/api/exchange
-      blocker:
-        base-url: http://localhost:8094/api/blocker
-      notifications:
-        base-url: http://localhost:8095/api/notifications
+      api-gateway:
+        base-url: http://localhost:8080

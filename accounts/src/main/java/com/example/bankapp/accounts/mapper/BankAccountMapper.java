@@ -9,7 +9,7 @@ import org.springframework.data.jdbc.core.mapping.AggregateReference;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface BankAccountMapper {
     @Mapping(target = "user", source = "userId")
     BankAccount toEntity(BankAccountCreateRequest createRequest);

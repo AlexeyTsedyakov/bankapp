@@ -2,9 +2,9 @@ package org.example.bankapp.front.web;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.bankapp.front.integration.accounts.dto.request.UserRegisterRequest;
 import org.example.bankapp.front.common.exceptions.IntegrationException;
 import org.example.bankapp.front.integration.accounts.AccountsGateway;
+import org.example.bankapp.front.integration.accounts.dto.request.UserRegisterRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;

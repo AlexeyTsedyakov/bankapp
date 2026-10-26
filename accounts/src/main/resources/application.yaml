@@ -1,5 +1,6 @@
 server:
-  port: 8090
+  port: 0
+  forward-headers-strategy: native
 
 spring:
   application:
@@ -7,9 +8,12 @@ spring:
   config:
     import: optional:file:./.env[.properties]
 
-  mvc:
-    servlet:
-      path: /api/accounts
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}:${random.uuid}
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?currentSchema=accounts
@@ -43,5 +47,5 @@ spring:
 
   http:
     serviceclient:
-      notifications:
-        base-url: http://localhost:8095/api/notifications
+      api-gateway:
+        base-url: http://localhost:8080

@@ -58,7 +58,7 @@ public class BankAccountControllerTest {
     @WithMockUser(roles = "accounts-access")
     void createBankAccount_withNonExistingUserCurrency_returns200() {
         var request = mockMvc.post()
-                .uri("/bank-accounts")
+                .uri("/accounts/bank-accounts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(rubCreateRequestDto));
 
@@ -75,7 +75,7 @@ public class BankAccountControllerTest {
     @WithMockUser(roles = "accounts-access")
     void createBankAccount_withExistingUserCurrency_returns409() {
         var request = mockMvc.post()
-                .uri("/bank-accounts")
+                .uri("/accounts//bank-accounts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(rubCreateRequestDto));
 
@@ -88,7 +88,7 @@ public class BankAccountControllerTest {
     void deleteBankAccount_withExistingAccount_returns204() throws UnsupportedEncodingException {
         BankAccountResponse accountDto = createBankAccount();
         var request = mockMvc.delete()
-                .uri("/bank-accounts/{id}", accountDto.id());
+                .uri("/accounts//bank-accounts/{id}", accountDto.id());
 
         assertThat(request).hasStatus(HttpStatus.NO_CONTENT);
     }
@@ -98,7 +98,7 @@ public class BankAccountControllerTest {
     void getBankAccountByNumber_withExistingAccount_returns200() throws UnsupportedEncodingException {
         BankAccountResponse accountDto = createBankAccount();
         var request = mockMvc.get()
-                .uri("/bank-accounts?number={number}", accountDto.accountNumber());
+                .uri("/accounts/bank-accounts?number={number}", accountDto.accountNumber());
 
         assertThat(request)
                 .hasStatusOk()
@@ -119,7 +119,7 @@ public class BankAccountControllerTest {
     @WithMockUser(roles = "accounts-access")
     void getBankAccountByNumber_withNonExistingNumber_returns404() {
         var request = mockMvc.get()
-                .uri("/bank-accounts?number={number}", "non_existing_number");
+                .uri("/accounts/bank-accounts?number={number}", "non_existing_number");
 
         assertThat(request).hasStatus(HttpStatus.NOT_FOUND);
     }
@@ -131,7 +131,7 @@ public class BankAccountControllerTest {
         var debitRequest = new BankAccountDepositRequest(new BigDecimal("100.50"));
 
         var request = mockMvc.post()
-                .uri("/bank-accounts/{id}/deposit", accountDto.id())
+                .uri("/accounts/bank-accounts/{id}/deposit", accountDto.id())
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(debitRequest));
@@ -151,7 +151,7 @@ public class BankAccountControllerTest {
         var debitRequest = new BankAccountDepositRequest(new BigDecimal("100.50"));
 
         var request = mockMvc.post()
-                .uri("/bank-accounts/{id}/deposit", 999999L)
+                .uri("/accounts/bank-accounts/{id}/deposit", 999999L)
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(debitRequest));
@@ -166,7 +166,7 @@ public class BankAccountControllerTest {
         var debitRequest = new BankAccountDepositRequest(new BigDecimal("-10.00"));
 
         var request = mockMvc.post()
-                .uri("/bank-accounts/{id}/deposit", accountDto.id())
+                .uri("/accounts/bank-accounts/{id}/deposit", accountDto.id())
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(debitRequest));
@@ -181,7 +181,7 @@ public class BankAccountControllerTest {
         var debitRequest = new BankAccountDepositRequest(BigDecimal.ZERO);
 
         var request = mockMvc.post()
-                .uri("/bank-accounts/{id}/deposit", accountDto.id())
+                .uri("/accounts/bank-accounts/{id}/deposit", accountDto.id())
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(debitRequest));
@@ -195,7 +195,7 @@ public class BankAccountControllerTest {
         BankAccountResponse accountDto = createBankAccount();
         var debitRequest = new BankAccountDepositRequest(new BigDecimal("100.00"));
         mockMvc.post()
-                .uri("/bank-accounts/{id}/deposit", accountDto.id())
+                .uri("/accounts/bank-accounts/{id}/deposit", accountDto.id())
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(debitRequest))
@@ -203,7 +203,7 @@ public class BankAccountControllerTest {
 
         var withdrawRequest = new BankAccountWithdrawRequest(new BigDecimal("40.00"));
         var request = mockMvc.post()
-                .uri("/bank-accounts/{id}/withdraw", accountDto.id())
+                .uri("/accounts/bank-accounts/{id}/withdraw", accountDto.id())
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawRequest));
@@ -224,7 +224,7 @@ public class BankAccountControllerTest {
         var withdrawRequest = new BankAccountWithdrawRequest(new BigDecimal("50.00"));
 
         var request = mockMvc.post()
-                .uri("/bank-accounts/{id}/withdraw", accountDto.id())
+                .uri("/accounts/bank-accounts/{id}/withdraw", accountDto.id())
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawRequest));
@@ -238,7 +238,7 @@ public class BankAccountControllerTest {
         var withdrawRequest = new BankAccountWithdrawRequest(new BigDecimal("40.00"));
 
         var request = mockMvc.post()
-                .uri("/bank-accounts/{id}/withdraw", 999999L)
+                .uri("/accounts/bank-accounts/{id}/withdraw", 999999L)
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawRequest));
@@ -253,7 +253,7 @@ public class BankAccountControllerTest {
         var withdrawRequest = new BankAccountWithdrawRequest(new BigDecimal("-10.00"));
 
         var request = mockMvc.post()
-                .uri("/bank-accounts/{id}/withdraw", accountDto.id())
+                .uri("/accounts/bank-accounts/{id}/withdraw", accountDto.id())
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawRequest));
@@ -268,7 +268,7 @@ public class BankAccountControllerTest {
         var withdrawRequest = new BankAccountWithdrawRequest(BigDecimal.ZERO);
 
         var request = mockMvc.post()
-                .uri("/bank-accounts/{id}/withdraw", accountDto.id())
+                .uri("/accounts/bank-accounts/{id}/withdraw", accountDto.id())
                 .header("Idempotency-Key", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(withdrawRequest));
@@ -287,7 +287,7 @@ public class BankAccountControllerTest {
                 .build();
 
         var registerResponse = mockMvc.post()
-                .uri("/users")
+                .uri("/accounts/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequestDto))
                 .exchange()
@@ -300,7 +300,7 @@ public class BankAccountControllerTest {
 
     private BankAccountResponse createBankAccount() throws UnsupportedEncodingException {
         var createResponse = mockMvc.post()
-                .uri("/bank-accounts")
+                .uri("/accounts/bank-accounts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(rubCreateRequestDto))
                 .exchange()
