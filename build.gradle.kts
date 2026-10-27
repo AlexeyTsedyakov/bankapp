@@ -16,6 +16,12 @@ allprojects {
 subprojects {
     pluginManager.apply("java")
 
+    // Отдельная конфигурация для Mockito-агента
+    val mockitoAgent = configurations.create("mockitoAgent")
+    dependencies {
+        mockitoAgent("org.mockito:mockito-core") { isTransitive = false }
+    }
+
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(25)
@@ -30,6 +36,9 @@ subprojects {
     // Общие настройки для всех задач типа Test (и test, и integrationTest)
     tasks.withType<Test>().configureEach {
         useJUnitPlatform()
+        jvmArgumentProviders.add(CommandLineArgumentProvider {
+            listOf("-javaagent:${mockitoAgent.singleFile.absolutePath}")
+        })
     }
 
     // Обычный test — без интеграционных тестов
