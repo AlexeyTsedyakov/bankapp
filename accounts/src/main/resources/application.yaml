@@ -10,8 +10,8 @@ spring:
 
   cloud:
     consul:
-      host: localhost
-      port: 8500
+      host: ${CONSUL_HOST}
+      port: ${CONSUL_PORT}
       discovery:
         instance-id: ${spring.application.name}:${random.uuid}
 
@@ -48,4 +48,4 @@ spring:
   http:
     serviceclient:
       api-gateway:
-        base-url: http://localhost:8080
+        base-url: http://${API_GATEWAY_HOST}:${API_GATEWAY_PORT}
